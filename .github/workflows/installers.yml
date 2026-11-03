@@ -95,7 +95,7 @@ jobs:
             if ($process.HasExited) { throw "App exited during first launch with code $($process.ExitCode)" }
           }
           if (-not (Test-Path $db)) { throw "SQLite database not created at $db" }
-          $before = (Get-FileHash $db -Algorithm SHA256).Hash
+          python -c "import sqlite3,sys; c=sqlite3.connect(sys.argv[1]); c.execute(\"INSERT OR REPLACE INTO settings(key,value) VALUES('__smoke_test__','preserved')\"); c.commit(); c.close()" $db
           Write-Output "SQLite created at expected per-user path; startup PASS"
           Start-Sleep -Seconds 5
           $process.Refresh()
@@ -110,8 +110,8 @@ jobs:
           for ($i = 0; $i -lt 60 -and (Test-Path $installDir); $i++) { Start-Sleep -Seconds 2 }
           if (Test-Path $installDir) { throw "Install directory still present after uninstall: $installDir" }
           if (-not (Test-Path $db)) { throw 'Uninstall removed user data unexpectedly' }
-          $after = (Get-FileHash $db -Algorithm SHA256).Hash
-          if ($before -ne $after) { throw 'User database changed during uninstall' }
+          $value = python -c "import sqlite3,sys; c=sqlite3.connect(sys.argv[1]); print(c.execute(\"SELECT value FROM settings WHERE key='__smoke_test__'\").fetchone()[0])" $db
+          if ($value -ne 'preserved') { throw 'User settings did not survive uninstall' }
           Write-Output 'Uninstall removed the app while preserving user SQLite data PASS'
       - name: macOS app and DMG summary
         if: runner.os == 'macOS'
