@@ -74,5 +74,6 @@ for file in out.rglob("*"):
 files = [p for p in out.iterdir() if p.is_file() and p.name != "SHA256SUMS.txt"]
 assert files, "No artifacts collected"
 (out / "SHA256SUMS.txt").write_text(
-    "".join(f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n" for p in sorted(files))
+    "".join(f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.name}\n" for p in sorted(files)),
+    newline="\n",
 )

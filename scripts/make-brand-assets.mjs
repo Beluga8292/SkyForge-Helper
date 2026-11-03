@@ -54,7 +54,7 @@ function banner({ width, height, titleSize, subtitleSize, bodySize, compact }) {
   </g>
   <text x="${textX}" y="${top + (compact ? 30 : 40)}" font-family="Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif" font-size="${subtitleSize}" font-weight="600" letter-spacing="5" fill="#9fb4d8">HYPIXEL SKYBLOCK DESKTOP COMPANION</text>
   <text x="${textX}" y="${top + (compact ? 96 : 118)}" font-family="Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif" font-size="${titleSize}" font-weight="800" letter-spacing="-1" fill="url(#title)">SKYFORGE HELPER</text>
-  <text x="${textX}" y="${top + (compact ? 142 : 172)}" font-family="Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif" font-size="${bodySize}" font-weight="400" fill="#a7b7d4">Your Hypixel SkyBlock Companion — profiles, Networth, markets,</text>
+  <text x="${textX}" y="${top + (compact ? 142 : 172)}" font-family="Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif" font-size="${bodySize}" font-weight="400" fill="#a7b7d4">Your Ultimate Hypixel SkyBlock Companion — profiles, Networth, markets,</text>
   <text x="${textX}" y="${top + (compact ? 170 : 204)}" font-family="Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif" font-size="${bodySize}" font-weight="400" fill="#a7b7d4">auctions and planning in one clean desktop app.</text>
   <rect x="${textX}" y="${top + (compact ? 196 : 236)}" width="${compact ? 520 : 700}" height="3" rx="1.5" fill="url(#rule)"/>
   <g font-family="Inter, SF Pro Display, Helvetica Neue, Arial, sans-serif" font-size="${compact ? 17 : 19}" font-weight="600" fill="#d8e4f8">

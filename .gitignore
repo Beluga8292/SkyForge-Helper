@@ -110,6 +110,7 @@ release-artifacts/
 docs/STAGE-*.md
 !docs/STAGE-9.md
 !docs/STAGE-9.2.md
+!docs/STAGE-9.3.md
 docs/RELEASE-NOTES-0.5.0-rc.5.md
 docs/VDS*.md
 docs/PRODUCTION*.md
@@ -117,6 +118,7 @@ docs/PRODUCTION*.md
 # Internal historical operations docs remain local, not deleted.
 docs/*
 !docs/STAGE-9.md
+!docs/STAGE-9.3.md
 !docs/REBRANDING.md
 !docs/BUILDING.md
 !docs/SECURITY.md
