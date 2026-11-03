@@ -3,8 +3,10 @@ import path from 'node:path';
 import os from 'node:os';
 const target = process.env.SFH_BUILD_TARGET;
 if (!['aarch64-apple-darwin', 'x86_64-pc-windows-msvc'].includes(target)) throw new Error('Explicit supported target required');
-const bundles = process.argv[2];
-if (!['app', 'nsis,msi'].includes(bundles)) throw new Error('Explicit compatibility bundles required');
+const allowed = new Set(['app', 'dmg', 'nsis', 'msi']);
+const requested = (process.argv[2] ?? '').split(',').map((value) => value.trim()).filter(Boolean);
+if (!requested.length || requested.some((bundle) => !allowed.has(bundle))) throw new Error('Explicit supported bundles required');
+const bundles = requested.join(',');
 // Cargo encoded flags avoid shell quoting/path-with-spaces issues. Order matters:
 // the more specific workspace prefix wins, including compile-time file! paths.
 const flags = [

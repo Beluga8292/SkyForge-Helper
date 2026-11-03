@@ -1,0 +1,55 @@
+name: Feature request
+description: Suggest an improvement for SkyForge Helper
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please describe the player problem first, then the proposed solution. This is an unofficial fan project and is not affiliated with Hypixel.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Explain the current limitation from a player's point of view.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Player profile
+        - Networth
+        - Bazaar
+        - Auction House
+        - Equipment Advisor
+        - Inventory
+        - Dungeon Planner
+        - Goals and Watchlist
+        - Installer / updates
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues and the README first.
+          required: true
+        - label: This request does not require bundling third-party assets without permission.
+          required: true

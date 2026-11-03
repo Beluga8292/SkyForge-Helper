@@ -48,11 +48,21 @@
     "longDescription": "SkyForge Helper is a desktop Hypixel SkyBlock companion with profiles, Bazaar analytics, Auction House browsing, calculators, progression and a watchlist.",
     "copyright": "Copyright (c) 2026 Beluga_8292",
     "macOS": {
-      "minimumSystemVersion": "10.15"
+      "minimumSystemVersion": "12.0",
+      "dmg": {
+        "background": "icons/dmg-background.png",
+        "windowSize": { "width": 660, "height": 400 },
+        "appPosition": { "x": 180, "y": 190 },
+        "applicationFolderPosition": { "x": 480, "y": 190 }
+      }
     },
     "windows": {
+      "webviewInstallMode": { "type": "downloadBootstrapper", "silent": true },
       "nsis": {
-        "installMode": "currentUser"
+        "installMode": "currentUser",
+        "languages": ["English", "Russian"],
+        "displayLanguageSelector": false,
+        "installerIcon": "icons/icon.ico"
       }
     },
     "createUpdaterArtifacts": true,

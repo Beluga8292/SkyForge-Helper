@@ -5,6 +5,14 @@ const cargo=fs.readFileSync('src-tauri/Cargo.toml','utf8').match(/^version = "([
 const release=process.argv.includes('--release');
 assert.equal(pkg.version,cargo);assert.equal(pkg.version,conf.version);assert.match(pkg.version,/^\d+\.\d+\.\d+-rc\.\d+$/);
 assert.equal(conf.identifier,'com.skyblock.companion');assert.equal(conf.bundle.windows.nsis.installMode,'currentUser');
+assert.deepEqual(conf.bundle.windows.nsis.languages,['English','Russian'],'Installer must ship English and Russian');
+assert.equal(conf.bundle.windows.nsis.displayLanguageSelector,false,'Installer must auto-select the OS language without an extra dialog');
+assert.equal(conf.bundle.windows.webviewInstallMode.type,'downloadBootstrapper','WebView2 must not be skipped');
+assert.equal(conf.bundle.windows.webviewInstallMode.silent,true,'WebView2 bootstrapper must be silent');
+assert.equal(conf.bundle.macOS.minimumSystemVersion,'12.0','macOS minimum version must match the documented target');
+assert(conf.bundle.macOS.dmg.background,'DMG background is required');
+assert(fs.existsSync(`src-tauri/${conf.bundle.macOS.dmg.background}`),'DMG background image is missing');
+assert(conf.bundle.macOS.dmg.applicationFolderPosition,'DMG must include an Applications shortcut position');
 assert(!/(?:http|https|ws):\/\/(?:localhost|127\.0\.0\.1)(?=[:\/; ])/.test(conf.app.security.csp),'Release CSP contains development endpoints');
 for(const p of JSON.parse(fs.readFileSync('src-tauri/capabilities/default.json')).permissions)if(typeof p==='object'&&p.identifier==='http:default')assert(p.allow.every(v=>v.url.startsWith('https://')||/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//.test(v.url)),'Release HTTP allow-list contains a non-HTTPS, non-loopback URL');
 assert(!fs.readFileSync('vite.config.ts','utf8').includes('sourcemap: true'));

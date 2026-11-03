@@ -17,14 +17,14 @@ jobs:
         include:
           - os: macos-14
             target: aarch64-apple-darwin
-            bundles: app
+            bundles: app,dmg
             platform: macos-arm64
           - os: windows-2022
             target: x86_64-pc-windows-msvc
             bundles: nsis,msi
             platform: windows-x64
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 60
+    timeout-minutes: 90
     env:
       VITE_BACKEND_URL: ${{ inputs.backend_url }}
       VITE_RELEASE_CANDIDATE: 'true'
@@ -45,6 +45,7 @@ jobs:
           targets: ${{ matrix.target }}
       - run: npm ci
       - run: python scripts/audit-publication.py
+      - run: node scripts/check-readme.mjs
       - run: node scripts/prepare-ci-build.mjs
       - run: node scripts/build-compat-native.mjs ${{ matrix.bundles }}
       - name: Collect validated non-release artifacts
@@ -57,6 +58,64 @@ jobs:
             $s = Get-AuthenticodeSignature $_.FullName
             Write-Output "$($_.Name): $($s.Status)"
           }
+      - name: Windows clean install, launch, data and uninstall smoke test
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $installer = (Resolve-Path 'artifacts/SkyForge-Helper-Setup-x64.exe').Path
+          Write-Output "Running silent per-user install: $installer"
+          Start-Process -FilePath $installer -ArgumentList '/S' -Wait
+
+          $installDir = Join-Path $env:LOCALAPPDATA 'SkyBlock Companion'
+          for ($i = 0; $i -lt 60 -and -not (Test-Path $installDir); $i++) { Start-Sleep -Seconds 2 }
+          if (-not (Test-Path $installDir)) { throw "Install directory not found: $installDir" }
+          if (-not $installDir.StartsWith($env:LOCALAPPDATA, [System.StringComparison]::OrdinalIgnoreCase)) {
+            throw "Installer is not per-user: $installDir"
+          }
+          $exe = Get-ChildItem $installDir -Filter '*.exe' |
+            Where-Object { $_.Name -notlike 'uninstall*' } |
+            Select-Object -First 1
+          if (-not $exe) { throw 'Application executable missing after install' }
+          Write-Output "Installed executable: $($exe.FullName)"
+
+          $shortcuts = Get-ChildItem (Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs') -Recurse -Filter '*.lnk' |
+            Where-Object { $_.Name -match 'SkyBlock|SkyForge' }
+          if (-not $shortcuts) { throw 'Start Menu shortcut not created' }
+          Write-Output "Start Menu shortcut: $($shortcuts[0].FullName)"
+
+          $db = Join-Path $env:APPDATA 'com.skyblock.companion\skyblock-companion.sqlite3'
+          Remove-Item $db -ErrorAction SilentlyContinue
+          $process = Start-Process -FilePath $exe.FullName -PassThru
+          for ($i = 0; $i -lt 60 -and -not (Test-Path $db); $i++) {
+            Start-Sleep -Seconds 2
+            $process.Refresh()
+            if ($process.HasExited) { throw "App exited during first launch with code $($process.ExitCode)" }
+          }
+          if (-not (Test-Path $db)) { throw "SQLite database not created at $db" }
+          $before = (Get-FileHash $db -Algorithm SHA256).Hash
+          Write-Output "SQLite created at expected per-user path; startup PASS"
+          Start-Sleep -Seconds 5
+          $process.Refresh()
+          if ($process.HasExited) { throw "App exited after startup with code $($process.ExitCode)" }
+          Stop-Process -Id $process.Id -Force
+          Start-Sleep -Seconds 3
+
+          $uninstaller = Join-Path $installDir 'uninstall.exe'
+          if (-not (Test-Path $uninstaller)) { throw 'Uninstaller missing' }
+          Write-Output 'Running silent uninstall'
+          Start-Process -FilePath $uninstaller -ArgumentList '/S' -Wait
+          for ($i = 0; $i -lt 60 -and (Test-Path $installDir); $i++) { Start-Sleep -Seconds 2 }
+          if (Test-Path $installDir) { throw "Install directory still present after uninstall: $installDir" }
+          if (-not (Test-Path $db)) { throw 'Uninstall removed user data unexpectedly' }
+          $after = (Get-FileHash $db -Algorithm SHA256).Hash
+          if ($before -ne $after) { throw 'User database changed during uninstall' }
+          Write-Output 'Uninstall removed the app while preserving user SQLite data PASS'
+      - name: macOS app and DMG summary
+        if: runner.os == 'macOS'
+        run: |
+          shasum -a 256 artifacts/*
+          hdiutil imageinfo artifacts/SkyForge-Helper-macOS-arm64.dmg | grep -E 'Format|Class Name|Total Bytes' || true
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: SkyForge-Helper-${{ matrix.platform }}-compat-dev-${{ github.sha }}

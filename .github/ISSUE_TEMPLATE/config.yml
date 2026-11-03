@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Discord community
+    url: https://discord.gg/bX3md4uepp
+    about: Ask for help, share feedback and follow development updates.
+  - name: Security report
+    url: https://github.com/Beluga8292/SkyForge-Helper/security/advisories/new
+    about: Report a vulnerability privately. Never post secrets in a public issue.
+  - name: Build and usage documentation
+    url: https://github.com/Beluga8292/SkyForge-Helper/blob/main/README.md
+    about: Read the FAQ, installation notes and known limitations first.

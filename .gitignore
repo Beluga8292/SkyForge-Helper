@@ -109,6 +109,7 @@ release-artifacts/
 *.env.backup*
 docs/STAGE-*.md
 !docs/STAGE-9.md
+!docs/STAGE-9.2.md
 docs/RELEASE-NOTES-0.5.0-rc.5.md
 docs/VDS*.md
 docs/PRODUCTION*.md
@@ -128,3 +129,5 @@ src-tauri/target-*/
 src-tauri/tauri.ci.generated.json
 !docs/images/
 !docs/images/skyforge-helper.png
+!docs/assets/
+!docs/assets/**
