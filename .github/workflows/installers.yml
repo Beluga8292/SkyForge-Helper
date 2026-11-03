@@ -1,0 +1,65 @@
+name: SkyForge Helper compatibility installers (artifacts only)
+on:
+  workflow_dispatch:
+    inputs:
+      backend_url:
+        description: Public HTTPS backend URL (no credentials)
+        required: true
+        default: https://updates.plasmavpn.online/sbc
+        type: string
+permissions:
+  contents: read
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            target: aarch64-apple-darwin
+            bundles: app
+            platform: macos-arm64
+          - os: windows-2022
+            target: x86_64-pc-windows-msvc
+            bundles: nsis,msi
+            platform: windows-x64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    env:
+      VITE_BACKEND_URL: ${{ inputs.backend_url }}
+      VITE_RELEASE_CANDIDATE: 'true'
+      SFH_BUILD_TARGET: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+        with:
+          targets: ${{ matrix.target }}
+      - run: npm ci
+      - run: python scripts/audit-publication.py
+      - run: node scripts/prepare-ci-build.mjs
+      - run: node scripts/build-compat-native.mjs ${{ matrix.bundles }}
+      - name: Collect validated non-release artifacts
+        run: python scripts/package-ci-artifacts.py
+      - name: Windows signature status (not signing)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Get-ChildItem artifacts/*.exe, artifacts/*.msi | ForEach-Object {
+            $s = Get-AuthenticodeSignature $_.FullName
+            Write-Output "$($_.Name): $($s.Status)"
+          }
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: SkyForge-Helper-${{ matrix.platform }}-compat-dev-${{ github.sha }}
+          if-no-files-found: error
+          retention-days: 14
+          path: artifacts/*

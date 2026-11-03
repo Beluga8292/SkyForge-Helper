@@ -1,0 +1,32 @@
+[
+  {
+    "file": "backend/compose.qa.yaml",
+    "rule": "credential-literal",
+    "sha256": "cbc539e4c4928f513cd0c269174c05b4abddc4ac2ab7284b45e4c5f494dd67e5",
+    "reason": "Reviewed synthetic fixture used by config or redaction tests, not a runtime credential"
+  },
+  {
+    "file": "backend/tests/test_config_env.py",
+    "rule": "credential-literal",
+    "sha256": "3a65c7effe631e5d55dc3ccee52e4bee3fcb0af4c0fe430ef44a1e2e9950ab4a",
+    "reason": "Reviewed synthetic fixture used by config or redaction tests, not a runtime credential"
+  },
+  {
+    "file": "backend/tests/test_config_env.py",
+    "rule": "credential-literal",
+    "sha256": "e96f9f1e44b8779c975ef87844ed5b67c5d4b266e47ac9065074e3c38abe699a",
+    "reason": "Reviewed synthetic fixture used by config or redaction tests, not a runtime credential"
+  },
+  {
+    "file": "backend/tests/test_security.py",
+    "rule": "credential-literal",
+    "sha256": "b70635cc7382f7703a05211b1fbc6a1eaa042130353892f99f8aba8b16730881",
+    "reason": "Reviewed synthetic fixture used by config or redaction tests, not a runtime credential"
+  },
+  {
+    "file": "src-tauri/src/lib.rs",
+    "rule": "personal-host-path",
+    "sha256": "1c392dfc25a8b3680fa3c8faa1f9d8860100664f7bf61e627ac77bb69c4f45c4",
+    "reason": "Reviewed synthetic fixture used by config or redaction tests, not a runtime credential"
+  }
+]

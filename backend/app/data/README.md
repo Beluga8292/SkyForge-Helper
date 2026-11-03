@@ -1,0 +1,3 @@
+# Versioned intelligence rules
+
+`intelligence_rules.json` is a data-only snapshot, versioned 2026-10-30. Sources and downloaded SHA256 fingerprints are embedded. XP/family data are community-maintained (NEU repository and SkyCrypt), not represented as official Hypixel guarantees. Current skills/item requirements come from Hypixel resources at request time. Accessory Power rarity values and exceptions were checked against the successor Minecraft Wiki; the old official Wiki redirects to its closure announcement. Unknown/new mechanics are unsupported rather than guessed. See repository documentation for limitations. No remote code is evaluated; tables are bundled, never fetched per item.

@@ -1,0 +1,9 @@
+FROM python:3.12-slim
+WORKDIR /app
+COPY backend ./backend
+COPY scripts/qa_http_app.py scripts/qa_worker.py scripts/verify_infrastructure.py /qa/
+COPY src/features/intelligence/demo-resources.json src/features/intelligence/demo-inventory.json src/features/intelligence/rules.json ./src/features/intelligence/
+RUN pip install --no-cache-dir './backend[dev]'
+WORKDIR /app/backend
+ENV PYTHONPATH=/qa:/app/backend
+CMD ["uvicorn","qa_http_app:create_qa_app","--factory","--host","0.0.0.0","--port","8000"]

@@ -1,0 +1,130 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+dist-ssr/
+*.local
+src-tauri/target/
+src-tauri/gen/schemas/
+src-tauri/gen/android/
+src-tauri/gen/apple/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Local databases and runtime data
+*.sqlite
+*.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+*.db
+*.db-journal
+
+# Test and coverage output
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+*.lcov
+
+# Logs and crash dumps
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.crash
+crashdump-*
+
+# Editors and OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+*~
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+
+# Generated, exact backend grants and local verification data
+src-tauri/capabilities/backend.generated.json
+src-tauri/tauri.backend.generated.json
+.verification/
+.worker-heartbeat
+
+# Python environments, caches and packaging
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+.pycoverage
+.coverage*
+htmlcov/
+
+# Signing material, certificates, archives and release installers
+*.password
+*.keystore
+*.jks
+*.mobileprovision
+*.cer
+*.crt
+*.dmg
+*.app/
+*.exe
+*.msi
+*.sig
+*.zip
+*.cats
+*.tar.gz
+*.dump
+*.sql.gz
+*.sql
+*.pgdump
+*.tsbuildinfo
+
+# Local runtime, server state, imports and internal audit history
+backend/data/
+backend/.data/
+backups/
+updates/
+artifacts/
+release-artifacts/
+*.env.backup*
+docs/STAGE-*.md
+!docs/STAGE-9.md
+docs/RELEASE-NOTES-0.5.0-rc.5.md
+docs/VDS*.md
+docs/PRODUCTION*.md
+
+# Internal historical operations docs remain local, not deleted.
+docs/*
+!docs/STAGE-9.md
+!docs/REBRANDING.md
+!docs/BUILDING.md
+!docs/SECURITY.md
+!docs/RELEASE-NOTES-UNRELEASED.md
+!docs/THIRD-PARTY-INVENTORY.json
+!docs/PUBLICATION-FILES.txt
+!docs/third-party/
+!docs/third-party/**
+src-tauri/target-*/
+src-tauri/tauri.ci.generated.json
+!docs/images/
+!docs/images/skyforge-helper.png

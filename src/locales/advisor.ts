@@ -1,0 +1,238 @@
+export const advisorRu = {
+  "advisor.stat.ability_damage": "Урон способностей",
+  "advisor.stat.attack_speed": "Скорость атаки",
+  "advisor.stat.block_fortune": "Удача блоков",
+  "advisor.stat.bonus_pest_chance": "Шанс вредителей",
+  "advisor.stat.breaking_power": "Сила разрушения",
+  "advisor.stat.crit_chance": "Шанс критического удара",
+  "advisor.stat.crit_damage": "Критический урон",
+  "advisor.stat.damage": "Базовый урон предмета",
+  "advisor.stat.defense": "Защита",
+  "advisor.stat.farming_fortune": "Фермерская удача",
+  "advisor.stat.farming_wisdom": "Мудрость фермерства",
+  "advisor.stat.fear": "Страх",
+  "advisor.stat.ferocity": "Свирепость",
+  "advisor.stat.fishing_speed": "Скорость рыбалки",
+  "advisor.stat.foraging_fortune": "Удача собирательства",
+  "advisor.stat.foraging_wisdom": "Мудрость собирательства",
+  "advisor.stat.health": "Здоровье",
+  "advisor.stat.heat_resistance": "Сопротивление жаре",
+  "advisor.stat.hunting_fortune": "Охотничья удача",
+  "advisor.stat.hunting_wisdom": "Мудрость охоты",
+  "advisor.stat.intelligence": "Интеллект",
+  "advisor.stat.magic_find": "Магическая удача",
+  "advisor.stat.mining_fortune": "Шахтёрская удача",
+  "advisor.stat.mining_speed": "Скорость добычи",
+  "advisor.stat.mining_wisdom": "Мудрость добычи",
+  "advisor.stat.overbloom": "Overbloom",
+  "advisor.stat.pull": "Притяжение",
+  "advisor.stat.sea_creature_chance": "Шанс морских существ",
+  "advisor.stat.speed": "Скорость",
+  "advisor.stat.strength": "Сила",
+  "advisor.stat.sweep": "Размах",
+  "advisor.stat.treasure_chance": "Шанс сокровищ",
+  "advisor.stat.trophy_chance": "Шанс трофеев",
+  "advisor.stat.true_defense": "Истинная защита",
+  "advisor.stat.vitality": "Живучесть",
+
+  "advisor.allUpgrades": "Все улучшения",
+  "advisor.dungeonScope": "В подземельях",
+  "advisor.reqType.SKILL": "Навык",
+  "advisor.reqType.SLAYER": "Slayer",
+  "advisor.reqType.DUNGEON_SKILL": "Уровень Catacombs",
+  "advisor.reqType.DUNGEON_TIER": "Прохождение этажа",
+  "advisor.reqType.other": "Другое требование",
+
+  "advisor.kind": "Тип улучшения",
+  "advisor.reason.reforge": "Альтернатива reforge",
+  "advisor.reason.enchantment": "Следующий подтверждённый уровень зачарования",
+  "advisor.itemRequirements": "Известные требования предмета",
+  "advisor.requirementsNone":
+    "В metadata нет дополнительных требований предмета; ограничения конкретного улучшения могут быть неизвестны.",
+  "advisor.req.met": "Выполнено",
+  "advisor.req.unmet": "Не выполнено",
+  "advisor.req.unknown": "Статус неизвестен",
+  "advisor.base": "Базовый вклад",
+  "advisor.delta": "Базовое изменение",
+  "advisor.effectsUnknown": "Численные эффекты неизвестны",
+  "advisor.modifierLimit":
+    "Итог после питомцев, звёзд и прочих модификаторов неизвестен. Это не оценка DPS. Отдельные варианты могут быть альтернативами друг другу.",
+
+  "advisor.change": "Что изменится",
+  "advisor.title": "Советник экипировки",
+  "advisor.subtitle":
+    "Следующие улучшения ваших предметов и аксессуаров с учётом установленных модификаций и бюджета.",
+  "advisor.budget": "Бюджет, монеты",
+  "advisor.all": "Все назначения",
+  "advisor.combat": "Бой",
+  "advisor.dungeons": "Подземелья",
+  "advisor.gathering": "Сбор ресурсов",
+  "advisor.purpose": "Назначение",
+  "advisor.equipped": "Экипировано",
+  "advisor.carried": "В инвентаре · предмет в руке неизвестен",
+  "advisor.empty": "Нет доступной экипировки для этого назначения",
+  "advisor.unavailable":
+    "Инвентарь недоступен. Рекомендации по предметам не рассчитаны.",
+  "advisor.partial":
+    "Доступны не все контейнеры. Учтены только достоверно загруженные ресурсы; итоговая потребность может быть меньше.",
+  "advisor.alternatives":
+    "Варианты сравниваются независимо: один запас материалов нельзя потратить на несколько улучшений одновременно. Сортировка по стоимости, а не по DPS.",
+  "advisor.within": "В пределах бюджета",
+  "advisor.over": "Выше бюджета",
+  "advisor.unknown": "Неизвестно",
+  "advisor.cost": "Материалы и сборы",
+  "advisor.known": "Известная часть стоимости",
+  "advisor.materials": "Материалы: нужно / есть / докупить",
+  "advisor.requirements":
+    "Игровые требования не подтверждены. Проверьте доступность применения в игре; наличие материалов не означает выполнение требований.",
+  "advisor.effect":
+    "Изменение уровня улучшения подтверждено рецептом; прирост характеристик и DPS не рассчитан. Для открытого gemstone-слота ещё нужен камень.",
+  "advisor.reason.stars":
+    "Следующая звезда: рецепт для этого предмета есть в справочнике, уже установленные звёзды учтены.",
+  "advisor.reason.potato":
+    "На подходящей броне или оружии ещё не достигнут предел Hot Potato Books.",
+  "advisor.reason.fuming":
+    "Fuming-вариант включает недостающие Hot Potato Books как предварительный этап.",
+  "advisor.reason.recombobulator":
+    "По данным предмета повышение редкости ещё не установлено. Эффект зависит от модификаторов.",
+  "advisor.reason.gemstone":
+    "Этот слот отсутствует среди открытых; материалы открытия известны для конкретного предмета.",
+  "advisor.current": "Сейчас",
+  "advisor.noOptions":
+    "Следующих подтверждённых рецептов в поддерживаемом наборе нет. Это не означает, что предмет максимален.",
+  "advisor.accessories": "Аксессуары и Magical Power",
+  "advisor.mp": "Magical Power",
+  "advisor.subset": "MP известной части коллекции",
+  "advisor.mpHint":
+    "Аксессуары — альтернативный путь развития. Прирост MP не переводится в выдуманный урон и не сравнивается с DPS экипировки.",
+  "advisor.gain": "Прирост MP",
+  "advisor.freshness": "Время снимка цен",
+  "advisor.priceHint":
+    "Оценка по текущим предложениям Bazaar, не гарантия цены исполнения. Неполная цена не считается нулевой.",
+  "advisor.stale": "Данные устарели: попадание в бюджет не подтверждается.",
+  "advisor.installed":
+    "Звёзды {stars} · HPB {hpb}/10 · Fuming {fuming}/5 · Recomb {recomb} · открыто слотов {gems}",
+  "advisor.modifiers": "Reforge: {reforge} · Enchantments: {count}",
+  "advisor.recipeSource": "Рецепты: локальный справочник NEU",
+  "advisor.accessoryEmpty":
+    "Подтверждённых вариантов аксессуаров нет или анализ ещё загружается.",
+} as const;
+export const advisorEn: Record<keyof typeof advisorRu, string> = {
+  "advisor.stat.ability_damage": "Ability Damage",
+  "advisor.stat.attack_speed": "Attack Speed",
+  "advisor.stat.block_fortune": "Block Fortune",
+  "advisor.stat.bonus_pest_chance": "Bonus Pest Chance",
+  "advisor.stat.breaking_power": "Breaking Power",
+  "advisor.stat.crit_chance": "Crit Chance",
+  "advisor.stat.crit_damage": "Crit Damage",
+  "advisor.stat.damage": "Damage",
+  "advisor.stat.defense": "Defense",
+  "advisor.stat.farming_fortune": "Farming Fortune",
+  "advisor.stat.farming_wisdom": "Farming Wisdom",
+  "advisor.stat.fear": "Fear",
+  "advisor.stat.ferocity": "Ferocity",
+  "advisor.stat.fishing_speed": "Fishing Speed",
+  "advisor.stat.foraging_fortune": "Foraging Fortune",
+  "advisor.stat.foraging_wisdom": "Foraging Wisdom",
+  "advisor.stat.health": "Health",
+  "advisor.stat.heat_resistance": "Heat Resistance",
+  "advisor.stat.hunting_fortune": "Hunting Fortune",
+  "advisor.stat.hunting_wisdom": "Hunting Wisdom",
+  "advisor.stat.intelligence": "Intelligence",
+  "advisor.stat.magic_find": "Magic Find",
+  "advisor.stat.mining_fortune": "Mining Fortune",
+  "advisor.stat.mining_speed": "Mining Speed",
+  "advisor.stat.mining_wisdom": "Mining Wisdom",
+  "advisor.stat.overbloom": "Overbloom",
+  "advisor.stat.pull": "Pull",
+  "advisor.stat.sea_creature_chance": "Sea Creature Chance",
+  "advisor.stat.speed": "Speed",
+  "advisor.stat.strength": "Strength",
+  "advisor.stat.sweep": "Sweep",
+  "advisor.stat.treasure_chance": "Treasure Chance",
+  "advisor.stat.trophy_chance": "Trophy Chance",
+  "advisor.stat.true_defense": "True Defense",
+  "advisor.stat.vitality": "Vitality",
+
+  "advisor.allUpgrades": "All upgrades",
+  "advisor.dungeonScope": "In dungeons",
+  "advisor.reqType.SKILL": "Skill",
+  "advisor.reqType.SLAYER": "Slayer",
+  "advisor.reqType.DUNGEON_SKILL": "Catacombs level",
+  "advisor.reqType.DUNGEON_TIER": "Floor completion",
+  "advisor.reqType.other": "Other requirement",
+
+  "advisor.kind": "Upgrade type",
+  "advisor.reason.reforge": "Reforge alternative",
+  "advisor.reason.enchantment": "Next verified enchantment level",
+  "advisor.itemRequirements": "Known item requirements",
+  "advisor.requirementsNone":
+    "Metadata lists no additional item requirements; upgrade-specific restrictions may still be unknown.",
+  "advisor.req.met": "Met",
+  "advisor.req.unmet": "Not met",
+  "advisor.req.unknown": "Unknown status",
+  "advisor.base": "Base contribution",
+  "advisor.delta": "Base change",
+  "advisor.effectsUnknown": "Numerical effects unknown",
+  "advisor.modifierLimit":
+    "Final effect after pets, stars and other modifiers is unknown. This is not a DPS estimate. Individual options may be mutually exclusive alternatives.",
+
+  "advisor.change": "What changes",
+  "advisor.title": "Equipment Advisor",
+  "advisor.subtitle":
+    "Next upgrades for your items and accessories, considering installed modifiers and your budget.",
+  "advisor.budget": "Budget, coins",
+  "advisor.all": "All purposes",
+  "advisor.combat": "Combat",
+  "advisor.dungeons": "Dungeons",
+  "advisor.gathering": "Gathering",
+  "advisor.purpose": "Purpose",
+  "advisor.equipped": "Equipped",
+  "advisor.carried": "In inventory · held item unknown",
+  "advisor.empty": "No available equipment for this purpose",
+  "advisor.unavailable":
+    "Inventory unavailable. Item advice could not be calculated.",
+  "advisor.partial":
+    "Some containers are unavailable. Only verified loaded resources are credited; actual purchase requirements may be lower.",
+  "advisor.alternatives":
+    "Options are independent alternatives: the same materials cannot fund several upgrades at once. Sorted by cost, not DPS.",
+  "advisor.within": "Within budget",
+  "advisor.over": "Over budget",
+  "advisor.unknown": "Unknown",
+  "advisor.cost": "Materials and fees",
+  "advisor.known": "Known part of cost",
+  "advisor.materials": "Materials: required / owned / missing",
+  "advisor.requirements":
+    "Gameplay requirements are unverified. Check application eligibility in game; owning the materials does not establish eligibility.",
+  "advisor.effect":
+    "The upgrade level change is confirmed by the recipe; stat gains and DPS are not calculated. An unlocked gemstone slot still needs a gemstone.",
+  "advisor.reason.stars":
+    "Next star: this item has a catalog recipe; installed stars have been accounted for.",
+  "advisor.reason.potato":
+    "Eligible armor or weapon has not reached its Hot Potato Book limit.",
+  "advisor.reason.fuming":
+    "The Fuming alternative includes missing Hot Potato Books as a prerequisite stage.",
+  "advisor.reason.recombobulator":
+    "The item does not have a rarity upgrade installed. Effects depend on modifiers.",
+  "advisor.reason.gemstone":
+    "This slot is not listed as unlocked; unlocking materials are known for this item.",
+  "advisor.current": "Current",
+  "advisor.noOptions":
+    "No next verified recipes in the supported set. This does not mean the item is maxed.",
+  "advisor.accessories": "Accessories and Magical Power",
+  "advisor.mp": "Magical Power",
+  "advisor.subset": "MP of known collection subset",
+  "advisor.mpHint":
+    "Accessories are an alternative progression path. MP gains are not converted to invented damage or ranked against equipment DPS.",
+  "advisor.gain": "MP gain",
+  "advisor.freshness": "Price snapshot time",
+  "advisor.priceHint":
+    "Estimate based on current Bazaar asks, not guaranteed execution prices. Incomplete prices never become zero.",
+  "advisor.stale": "Data is stale: budget eligibility is unconfirmed.",
+  "advisor.installed":
+    "Stars {stars} · HPB {hpb}/10 · Fuming {fuming}/5 · Recomb {recomb} · unlocked slots {gems}",
+  "advisor.modifiers": "Reforge: {reforge} · Enchantments: {count}",
+  "advisor.recipeSource": "Recipes: local NEU catalog",
+  "advisor.accessoryEmpty":
+    "No verified accessory alternatives available, or analysis is still loading.",
+};

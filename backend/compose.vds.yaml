@@ -1,0 +1,263 @@
+# Isolated VDS deployment for SkyBlock Companion.
+#
+# Project name, network and volumes are unique to this stack. It must never be
+# merged into the existing Remnawave/Caddy/PostgreSQL/Redis projects.
+#
+#   docker compose -p skyblock-companion -f compose.vds.yaml up -d --build
+#
+# Only 127.0.0.1:18080 is published. Desktop access is expected through an SSH
+# tunnel; PostgreSQL and Redis stay on the internal Docker network.
+
+name: skyblock-companion
+
+x-backend-env: &backend-env
+  ENVIRONMENT: production
+  DEBUG: "false"
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  API_PREFIX: /api/v1
+
+  DATABASE_URL: postgresql+asyncpg://skyblock:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@skyblock-postgres:5432/skyblock
+  DATABASE_POOL_SIZE: "5"
+  DATABASE_POOL_TIMEOUT_SECONDS: "5"
+  AUTO_CREATE_TABLES: "false"
+
+  REDIS_URL: redis://skyblock-redis:6379/0
+  CACHE_PREFIX: sbc:v1
+  REDIS_SOCKET_TIMEOUT_SECONDS: "10"
+
+  HYPIXEL_API_KEY: ${HYPIXEL_API_KEY:?set HYPIXEL_API_KEY}
+  HYPIXEL_BASE_URL: https://api.hypixel.net/v2
+  MOJANG_BASE_URL: https://api.mojang.com
+  HTTP_TIMEOUT_SECONDS: "15"
+  HTTP_CONNECT_TIMEOUT_SECONDS: "5"
+  UPSTREAM_MAX_RETRIES: "2"
+  # Never above Hypixel's documented 120/minute.
+  UPSTREAM_RATE_LIMIT_PER_MINUTE: "100"
+  UPSTREAM_QUEUE_SIZE: "100"
+
+  CACHE_TTL_BAZAAR: "20"
+  # Snapshot is republished by the worker every 60s; a longer freshness window
+  # keeps /status stable between rebuilds without serving older data upstream.
+  CACHE_TTL_AUCTIONS: "120"
+  CACHE_TTL_PLAYER: "90"
+  CACHE_TTL_PROFILES: "90"
+  CACHE_TTL_RESOURCES: "43200"
+  CACHE_STALE_SECONDS: "3600"
+  CACHE_SWR_ENABLED: "true"
+
+  BACKEND_RATE_LIMIT_PER_MINUTE: "600"
+  # Production rejects plain-HTTP origins. The Tauri runtime uses the native
+  # HTTP plugin (no CORS) and the browser preview uses the same-origin Vite proxy.
+  CORS_ORIGINS: '["tauri://localhost","https://tauri.localhost"]'
+  TRUSTED_PROXY_IPS: "[]"
+  FORWARDED_ALLOW_IPS: "127.0.0.1"
+
+  AUCTION_REFRESH_SECONDS: "60"
+  AUCTION_FETCH_CONCURRENCY: "4"
+  HISTORY_INTERVAL_SECONDS: "300"
+  HISTORY_RAW_RETENTION_HOURS: "168"
+  HISTORY_HOURLY_RETENTION_DAYS: "30"
+  CLEANUP_INTERVAL_SECONDS: "21600"
+  AGGREGATE_INTERVAL_SECONDS: "3600"
+  WORKER_HEARTBEAT_PATH: /tmp/worker-heartbeat
+
+services:
+  skyblock-postgres:
+    image: postgres:16-alpine
+    container_name: skyblock-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: skyblock
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: skyblock
+      TZ: UTC
+    command:
+      - postgres
+      - -c
+      - shared_buffers=64MB
+      - -c
+      - max_connections=20
+      - -c
+      - effective_cache_size=128MB
+      - -c
+      - work_mem=2MB
+      - -c
+      - maintenance_work_mem=32MB
+      - -c
+      - wal_compression=on
+    volumes:
+      - skyblock-postgres-data:/var/lib/postgresql/data
+    networks:
+      - skyblock-net
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skyblock -d skyblock"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    shm_size: 96m
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 320M
+          cpus: "0.50"
+
+  skyblock-redis:
+    image: redis:7-alpine
+    container_name: skyblock-redis
+    restart: unless-stopped
+    # Cache only: no AOF/RDB. Rate-limiter keys and locks are short-lived and
+    # must never be evicted, so the policy stays noeviction.
+    command:
+      - redis-server
+      - --save
+      - ""
+      - --appendonly
+      - "no"
+      - --maxmemory
+      - 448mb
+      - --maxmemory-policy
+      - noeviction
+      - --tcp-keepalive
+      - "60"
+    volumes:
+      - skyblock-redis-data:/data
+    networks:
+      - skyblock-net
+    expose:
+      - "6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 12
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.50"
+
+  skyblock-migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: skyblock-companion-api:0.5.0-rc.1
+    container_name: skyblock-migrate
+    environment: *backend-env
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+    depends_on:
+      skyblock-postgres:
+        condition: service_healthy
+    networks:
+      - skyblock-net
+    healthcheck:
+      disable: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.50"
+
+  skyblock-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: skyblock-companion-api:0.5.0-rc.1
+    container_name: skyblock-api
+    restart: unless-stopped
+    environment:
+      <<: *backend-env
+      AUCTION_SNAPSHOT_BUILDER: "false"
+    depends_on:
+      skyblock-postgres:
+        condition: service_healthy
+      skyblock-redis:
+        condition: service_healthy
+      skyblock-migrate:
+        condition: service_completed_successfully
+    networks:
+      - skyblock-net
+    ports:
+      - "127.0.0.1:18080:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import json,urllib.request; print(json.load(urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health'))['status'])"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          # Parsing the complete AH snapshot (~110 MB JSON) peaks above 640M.
+          # 640M was OOM-killed during live verification.
+          memory: 1280M
+          cpus: "1.00"
+
+  skyblock-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: skyblock-companion-api:0.5.0-rc.1
+    container_name: skyblock-worker
+    restart: unless-stopped
+    command: ["python", "-m", "app.workers.main"]
+    environment:
+      <<: *backend-env
+      AUCTION_SNAPSHOT_BUILDER: "true"
+    depends_on:
+      skyblock-postgres:
+        condition: service_healthy
+      skyblock-redis:
+        condition: service_healthy
+      skyblock-api:
+        condition: service_healthy
+    networks:
+      - skyblock-net
+    healthcheck:
+      test: ["CMD", "python", "-c", "from pathlib import Path; import time; assert time.time()-Path('/tmp/worker-heartbeat').stat().st_mtime < 120"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    stop_grace_period: 30s
+    deploy:
+      resources:
+        limits:
+          # Building the snapshot holds raw pages and typed models at once.
+          memory: 1024M
+          cpus: "1.00"
+
+networks:
+  skyblock-net:
+    name: skyblock-companion-net
+    driver: bridge
+
+volumes:
+  skyblock-postgres-data:
+    name: skyblock-companion-postgres-data
+  skyblock-redis-data:
+    name: skyblock-companion-redis-data

@@ -1,0 +1,14 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const config = JSON.parse(fs.readFileSync('src-tauri/tauri.conf.json', 'utf8'));
+assert.equal(config.identifier, 'com.skyblock.companion');
+assert.equal(config.productName, 'SkyBlock Companion', 'Native productName rename remains gated on install-over/updater E2E');
+assert.equal(config.app.windows[0].title, 'SkyForge Helper');
+assert.equal(config.bundle.copyright, 'Copyright (c) 2026 Beluga_8292');
+assert.deepEqual(config.plugins.updater.endpoints, ['https://updates.plasmavpn.online/sbc/updates/latest.json']);
+assert.equal(config.plugins.updater.pubkey, 'dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDhFRkM3RThFODQ0RjA0NjMKUldSakJFK0Vqbjc4anFFSWdUNWk5MTBOSDEyVXVGMGduZDFwdkRhK05jd0pvekRRZFhTekROOTgK');
+const rust = fs.readFileSync('src-tauri/src/lib.rs', 'utf8');
+assert(rust.includes('app.path().app_data_dir()?'));
+assert(rust.includes('join("skyblock-companion.sqlite3")'));
+assert(fs.readFileSync('LICENSE', 'utf8').includes('Copyright (c) 2026 Beluga_8292'));
+console.log('UI brand/attribution PASS; legacy install, data and updater identities preserved; migration E2E still required');

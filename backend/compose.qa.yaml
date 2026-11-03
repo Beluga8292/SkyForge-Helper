@@ -1,0 +1,71 @@
+name: sbc-stage5-qa
+x-env: &env
+  ENVIRONMENT: test
+  DATABASE_URL: postgresql+asyncpg://sbc_qa:disposable_fixture_password@postgres:5432/stage5_sbc_qa
+  REDIS_URL: redis://redis:6379/0
+  SBC_QA_INFRA: '1'
+  AUTO_CREATE_TABLES: 'false'
+  HYPIXEL_API_KEY: ''
+  WORKER_HEARTBEAT_PATH: /tmp/worker-heartbeat
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: sbc_qa
+      POSTGRES_PASSWORD: disposable_fixture_password
+      POSTGRES_DB: stage5_sbc_qa
+    volumes: [qa-postgres:/var/lib/postgresql/data]
+    healthcheck:
+      test: ['CMD-SHELL','pg_isready -U sbc_qa -d stage5_sbc_qa']
+      interval: 3s
+      timeout: 2s
+      retries: 30
+  redis:
+    image: redis:7-alpine
+    command: ['redis-server','--appendonly','yes','--maxmemory','512mb','--maxmemory-policy','noeviction']
+    volumes: [qa-redis:/data]
+    healthcheck:
+      test: ['CMD','redis-cli','ping']
+      interval: 3s
+      timeout: 2s
+      retries: 30
+  migrate:
+    build: {context: .., dockerfile: backend/Dockerfile.qa}
+    environment: *env
+    command: ['alembic','upgrade','head']
+    depends_on: {postgres: {condition: service_healthy}}
+  api:
+    build: {context: .., dockerfile: backend/Dockerfile.qa}
+    environment: *env
+    ports: ['127.0.0.1:${SBC_QA_PORT:-18005}:8000']
+    stop_grace_period: 20s
+    healthcheck:
+      test: ['CMD','python','-c',"import urllib.request;urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      redis: {condition: service_healthy}
+  worker:
+    build: {context: .., dockerfile: backend/Dockerfile.qa}
+    environment: *env
+    command: ['python','/qa/qa_worker.py']
+    stop_grace_period: 20s
+    healthcheck:
+      test: ['CMD','python','-c',"from pathlib import Path;import time;assert time.time()-Path('/tmp/worker-heartbeat').stat().st_mtime<60"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    depends_on: {api: {condition: service_healthy}}
+  verify:
+    build: {context: .., dockerfile: backend/Dockerfile.qa}
+    environment: *env
+    command: ['python','/qa/verify_infrastructure.py']
+    profiles: ['verify']
+    depends_on: {api: {condition: service_healthy}}
+volumes:
+  qa-postgres:
+  qa-redis:
+# All upstream calls in api/worker are MockTransport fixtures; no real key or live polling.
+# No service shares production volumes or publishes database/cache ports.

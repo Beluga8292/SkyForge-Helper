@@ -1,0 +1,458 @@
+{
+  "source": "https://api.hypixel.net/v2/resources/skyblock/items",
+  "lastUpdated": 1793311327754,
+  "items": [
+    {
+      "id": "LIVID_DAGGER",
+      "name": "Livid Dagger",
+      "category": "SWORD",
+      "tier": "LEGENDARY",
+      "material": "IRON_SWORD",
+      "dungeon_item": true,
+      "requirements": [
+        {
+          "type": "DUNGEON_TIER",
+          "dungeon_type": "CATACOMBS",
+          "tier": 5
+        }
+      ],
+      "stats": {
+        "DAMAGE": 210,
+        "STRENGTH": 60,
+        "ATTACK_SPEED": 50,
+        "CRITICAL_DAMAGE": 50,
+        "CRITICAL_CHANCE": 100
+      }
+    },
+    {
+      "id": "SHADOW_FURY",
+      "name": "Shadow Fury",
+      "category": "SWORD",
+      "tier": "LEGENDARY",
+      "material": "DIAMOND_SWORD",
+      "dungeon_item": true,
+      "requirements": [
+        {
+          "type": "DUNGEON_TIER",
+          "dungeon_type": "CATACOMBS",
+          "tier": 5
+        }
+      ],
+      "stats": {
+        "WALK_SPEED": 30,
+        "DAMAGE": 300,
+        "STRENGTH": 130,
+        "CRITICAL_DAMAGE": 30
+      }
+    },
+    {
+      "id": "JUJU_SHORTBOW",
+      "name": "Juju Shortbow",
+      "category": "BOW",
+      "tier": "EPIC",
+      "material": "BOW",
+      "requirements": [
+        {
+          "type": "SLAYER",
+          "slayer_boss_type": "enderman",
+          "level": 5
+        }
+      ],
+      "catacombs_requirements": [
+        {
+          "type": "DUNGEON_SKILL",
+          "dungeon_type": "CATACOMBS",
+          "level": 15
+        }
+      ],
+      "stats": {
+        "DAMAGE": 310,
+        "STRENGTH": 40,
+        "CRITICAL_DAMAGE": 110,
+        "CRITICAL_CHANCE": 10
+      }
+    },
+    {
+      "id": "BAT_WAND",
+      "name": "Spirit Sceptre",
+      "category": "SWORD",
+      "tier": "LEGENDARY",
+      "material": "PAPER",
+      "dungeon_item": true,
+      "requirements": [
+        {
+          "type": "DUNGEON_TIER",
+          "dungeon_type": "CATACOMBS",
+          "tier": 4
+        }
+      ],
+      "stats": {
+        "DAMAGE": 180,
+        "WEAPON_ABILITY_DAMAGE": 2000,
+        "INTELLIGENCE": 300
+      }
+    },
+    {
+      "id": "FLORID_ZOMBIE_SWORD",
+      "name": "Florid Zombie Sword",
+      "category": "SWORD",
+      "tier": "LEGENDARY",
+      "material": "GOLD_SWORD",
+      "requirements": [
+        {
+          "type": "DUNGEON_SKILL",
+          "dungeon_type": "CATACOMBS",
+          "level": 18
+        }
+      ],
+      "stats": {
+        "DAMAGE": 150,
+        "STRENGTH": 80,
+        "INTELLIGENCE": 100
+      }
+    },
+    {
+      "id": "ADAPTIVE_BELT",
+      "name": "Adaptive Belt",
+      "category": "BELT",
+      "tier": "EPIC",
+      "material": "PAPER",
+      "dungeon_item": true,
+      "requirements": [
+        {
+          "type": "DUNGEON_TIER",
+          "dungeon_type": "CATACOMBS",
+          "tier": 2
+        }
+      ],
+      "stats": {
+        "STRENGTH": 5,
+        "HEALTH": 10,
+        "DEFENSE": 5
+      }
+    },
+    {
+      "id": "BONE_NECKLACE",
+      "name": "Bone Necklace",
+      "category": "NECKLACE",
+      "tier": "EPIC",
+      "material": "PAPER",
+      "dungeon_item": true,
+      "requirements": [
+        {
+          "type": "DUNGEON_TIER",
+          "dungeon_type": "CATACOMBS",
+          "tier": 4
+        }
+      ],
+      "stats": {
+        "DEFENSE": 35,
+        "CRITICAL_CHANCE": 3
+      }
+    },
+    {
+      "id": "SHADOW_ASSASSIN_CLOAK",
+      "name": "Shadow Assassin Cloak",
+      "category": "CLOAK",
+      "tier": "EPIC",
+      "material": "PAPER",
+      "dungeon_item": true,
+      "requirements": [
+        {
+          "type": "DUNGEON_TIER",
+          "dungeon_type": "CATACOMBS",
+          "tier": 5
+        }
+      ],
+      "stats": {
+        "STRENGTH": 20,
+        "WALK_SPEED": 3
+      }
+    },
+    {
+      "id": "SOULWEAVER_GLOVES",
+      "name": "Soulweaver Gloves",
+      "category": "GLOVES",
+      "tier": "EPIC",
+      "material": "PAPER",
+      "dungeon_item": true,
+      "requirements": [
+        {
+          "type": "DUNGEON_TIER",
+          "dungeon_type": "CATACOMBS",
+          "tier": 6
+        }
+      ],
+      "stats": {
+        "strength": 10,
+        "critical_damage": 10
+      }
+    },
+    {
+      "id": "POWER_WITHER_HELMET",
+      "name": "Necron's Helmet",
+      "category": "HELMET",
+      "tier": "LEGENDARY",
+      "material": "SKULL_ITEM",
+      "dungeon_item": true,
+      "requirements": [
+        {
+          "type": "DUNGEON_TIER",
+          "dungeon_type": "CATACOMBS",
+          "tier": 7
+        }
+      ],
+      "stats": {
+        "DEFENSE": 100,
+        "HEALTH": 180,
+        "STRENGTH": 40,
+        "CRITICAL_DAMAGE": 30,
+        "INTELLIGENCE": 30
+      }
+    },
+    {
+      "id": "POWER_WITHER_CHESTPLATE",
+      "name": "Necron's Chestplate",
+      "category": "CHESTPLATE",
+      "tier": "LEGENDARY",
+      "material": "LEATHER_CHESTPLATE",
+      "dungeon_item": true,
+      "requirements": [
+        {
+          "type": "DUNGEON_TIER",
+          "dungeon_type": "CATACOMBS",
+          "tier": 7
+        }
+      ],
+      "stats": {
+        "DEFENSE": 140,
+        "HEALTH": 260,
+        "STRENGTH": 40,
+        "CRITICAL_DAMAGE": 30,
+        "INTELLIGENCE": 10
+      }
+    },
+    {
+      "id": "POWER_WITHER_LEGGINGS",
+      "name": "Necron's Leggings",
+      "category": "LEGGINGS",
+      "tier": "LEGENDARY",
+      "material": "LEATHER_LEGGINGS",
+      "dungeon_item": true,
+      "requirements": [
+        {
+          "type": "DUNGEON_TIER",
+          "dungeon_type": "CATACOMBS",
+          "tier": 7
+        }
+      ],
+      "stats": {
+        "DEFENSE": 125,
+        "HEALTH": 230,
+        "STRENGTH": 40,
+        "CRITICAL_DAMAGE": 30,
+        "INTELLIGENCE": 10
+      }
+    },
+    {
+      "id": "POWER_WITHER_BOOTS",
+      "name": "Necron's Boots",
+      "category": "BOOTS",
+      "tier": "LEGENDARY",
+      "material": "LEATHER_BOOTS",
+      "dungeon_item": true,
+      "requirements": [
+        {
+          "type": "DUNGEON_TIER",
+          "dungeon_type": "CATACOMBS",
+          "tier": 7
+        }
+      ],
+      "stats": {
+        "DEFENSE": 85,
+        "HEALTH": 145,
+        "STRENGTH": 40,
+        "CRITICAL_DAMAGE": 30,
+        "INTELLIGENCE": 10
+      }
+    },
+    {
+      "id": "WISE_WITHER_HELMET",
+      "name": "Storm's Helmet",
+      "category": "HELMET",
+      "tier": "LEGENDARY",
+      "material": "SKULL_ITEM",
+      "dungeon_item": true,
+      "requirements": [
+        {
+          "type": "DUNGEON_TIER",
+          "dungeon_type": "CATACOMBS",
+          "tier": 7
+        }
+      ],
+      "stats": {
+        "DEFENSE": 80,
+        "HEALTH": 180,
+        "INTELLIGENCE": 400
+      }
+    },
+    {
+      "id": "WISE_WITHER_CHESTPLATE",
+      "name": "Storm's Chestplate",
+      "category": "CHESTPLATE",
+      "tier": "LEGENDARY",
+      "material": "LEATHER_CHESTPLATE",
+      "dungeon_item": true,
+      "requirements": [
+        {
+          "type": "DUNGEON_TIER",
+          "dungeon_type": "CATACOMBS",
+          "tier": 7
+        }
+      ],
+      "stats": {
+        "DEFENSE": 120,
+        "HEALTH": 260,
+        "INTELLIGENCE": 250
+      }
+    },
+    {
+      "id": "WISE_WITHER_LEGGINGS",
+      "name": "Storm's Leggings",
+      "category": "LEGGINGS",
+      "tier": "LEGENDARY",
+      "material": "LEATHER_LEGGINGS",
+      "dungeon_item": true,
+      "requirements": [
+        {
+          "type": "DUNGEON_TIER",
+          "dungeon_type": "CATACOMBS",
+          "tier": 7
+        }
+      ],
+      "stats": {
+        "DEFENSE": 105,
+        "HEALTH": 230,
+        "INTELLIGENCE": 250
+      }
+    },
+    {
+      "id": "WISE_WITHER_BOOTS",
+      "name": "Storm's Boots",
+      "category": "BOOTS",
+      "tier": "LEGENDARY",
+      "material": "LEATHER_BOOTS",
+      "dungeon_item": true,
+      "requirements": [
+        {
+          "type": "DUNGEON_TIER",
+          "dungeon_type": "CATACOMBS",
+          "tier": 7
+        }
+      ],
+      "stats": {
+        "DEFENSE": 65,
+        "HEALTH": 145,
+        "INTELLIGENCE": 250
+      }
+    },
+    {
+      "id": "TANK_WITHER_HELMET",
+      "name": "Goldor's Helmet",
+      "category": "HELMET",
+      "tier": "LEGENDARY",
+      "material": "SKULL_ITEM",
+      "dungeon_item": true,
+      "requirements": [
+        {
+          "type": "DUNGEON_TIER",
+          "dungeon_type": "CATACOMBS",
+          "tier": 7
+        }
+      ],
+      "stats": {
+        "DEFENSE": 180,
+        "HEALTH": 210,
+        "INTELLIGENCE": 30
+      }
+    },
+    {
+      "id": "TANK_WITHER_CHESTPLATE",
+      "name": "Goldor's Chestplate",
+      "category": "CHESTPLATE",
+      "tier": "LEGENDARY",
+      "material": "LEATHER_CHESTPLATE",
+      "dungeon_item": true,
+      "requirements": [
+        {
+          "type": "DUNGEON_TIER",
+          "dungeon_type": "CATACOMBS",
+          "tier": 7
+        }
+      ],
+      "stats": {
+        "DEFENSE": 275,
+        "HEALTH": 310,
+        "INTELLIGENCE": 20
+      }
+    },
+    {
+      "id": "TANK_WITHER_LEGGINGS",
+      "name": "Goldor's Leggings",
+      "category": "LEGGINGS",
+      "tier": "LEGENDARY",
+      "material": "LEATHER_LEGGINGS",
+      "dungeon_item": true,
+      "requirements": [
+        {
+          "type": "DUNGEON_TIER",
+          "dungeon_type": "CATACOMBS",
+          "tier": 7
+        }
+      ],
+      "stats": {
+        "DEFENSE": 240,
+        "HEALTH": 260,
+        "INTELLIGENCE": 20
+      }
+    },
+    {
+      "id": "TANK_WITHER_BOOTS",
+      "name": "Goldor's Boots",
+      "category": "BOOTS",
+      "tier": "LEGENDARY",
+      "material": "LEATHER_BOOTS",
+      "dungeon_item": true,
+      "requirements": [
+        {
+          "type": "DUNGEON_TIER",
+          "dungeon_type": "CATACOMBS",
+          "tier": 7
+        }
+      ],
+      "stats": {
+        "DEFENSE": 165,
+        "HEALTH": 190,
+        "INTELLIGENCE": 20
+      }
+    }
+  ],
+  "version": "2026-11-03",
+  "neuSource": "https://raw.githubusercontent.com/NotEnoughUpdates/NotEnoughUpdates-REPO/423bcc754b530a52ac87190bd77cb286aabd564b/items/FLORID_ZOMBIE_SWORD.json",
+  "supportEvidence": {
+    "FLORID_ZOMBIE_SWORD": [
+      "§7Damage: §c+150",
+      "§7Strength: §c+80",
+      "§7Intelligence: §b+100",
+      "§7Gemstones: §8[§7§8] []",
+      "",
+      "§6Ability: Instant Heal  §e§lRIGHT CLICK",
+      "§7Heal for §c500❤ §7and heal players within §a8",
+      "§7blocks for §c100❤§7.",
+      "§8Vitality Cost: §425",
+      "",
+      "§8This item can be reforged!",
+      "§6§lLEGENDARY SWORD"
+    ]
+  }
+}

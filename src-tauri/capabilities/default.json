@@ -1,0 +1,77 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Main window: custom titlebar controls, Hypixel/Mojang HTTP and external links.",
+  "windows": [
+    "main"
+  ],
+  "permissions": [
+    "core:default",
+    "core:window:allow-minimize",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-is-maximized",
+    "core:window:allow-close",
+    "core:window:allow-start-dragging",
+    "opener:default",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [
+        {
+          "url": "https://developer.hypixel.net/*"
+        },
+        {
+          "url": "https://api.hypixel.net/*"
+        }
+      ]
+    },
+    {
+      "identifier": "opener:allow-open-path",
+      "allow": [
+        {
+          "path": "$APPDATA"
+        },
+        {
+          "path": "$APPDATA/**"
+        }
+      ]
+    },
+    {
+      "identifier": "http:default",
+      "allow": [
+        {
+          "url": "https://api.hypixel.net/*"
+        },
+        {
+          "url": "https://api.mojang.com/*"
+        },
+        {
+          "url": "https://piston-meta.mojang.com/*"
+        },
+        {
+          "url": "https://launchermeta.mojang.com/*"
+        },
+        {
+          "url": "https://launcher.mojang.com/*"
+        },
+        {
+          "url": "https://resources.download.minecraft.net/*"
+        },
+        {
+          "url": "https://textures.minecraft.net/*"
+        },
+        {
+          "url": "http://127.0.0.1:8000/*"
+        },
+        {
+          "url": "http://127.0.0.1:18080/*"
+        },
+        {
+          "url": "http://localhost:18080/*"
+        }
+      ]
+    },
+    "notification:default",
+    "updater:default",
+    "process:allow-restart"
+  ]
+}

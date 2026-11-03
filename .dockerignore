@@ -1,0 +1,11 @@
+.git
+.env
+**/.env
+**/.env.*
+**/.venv
+node_modules
+src-tauri/target
+.verification
+**/__pycache__
+*.sqlite3
+*.db

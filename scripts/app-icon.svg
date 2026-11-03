@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#12141c"/>
+      <stop offset="1" stop-color="#07080d"/>
+    </linearGradient>
+    <linearGradient id="gem" x1="0.15" y1="0" x2="0.85" y2="1">
+      <stop offset="0" stop-color="#c4b5fd"/>
+      <stop offset="0.5" stop-color="#8b5cf6"/>
+      <stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.42" r="0.55">
+      <stop offset="0" stop-color="#8b5cf6" stop-opacity="0.45"/>
+      <stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="32" y="32" width="960" height="960" rx="220" fill="url(#bg)"/>
+  <rect x="32" y="32" width="960" height="960" rx="220" fill="none" stroke="#2a2f42" stroke-width="10"/>
+  <circle cx="512" cy="470" r="360" fill="url(#glow)"/>
+  <g>
+    <path d="M512 214 L718 430 L512 810 L306 430 Z" fill="url(#gem)"/>
+    <path d="M512 214 L718 430 L512 512 Z" fill="#e9e4ff" fill-opacity="0.35"/>
+    <path d="M512 512 L512 810 L306 430 Z" fill="#0a0b0f" fill-opacity="0.22"/>
+    <path d="M306 430 L718 430 L512 512 Z" fill="#0a0b0f" fill-opacity="0.16"/>
+    <path d="M512 214 L718 430 L512 810 L306 430 Z" fill="none" stroke="#f5f3ff" stroke-opacity="0.45" stroke-width="8" stroke-linejoin="round"/>
+  </g>
+</svg>
