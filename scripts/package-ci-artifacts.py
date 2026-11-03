@@ -56,10 +56,14 @@ elif platform.system() == "Windows":
     nsis = list((target / "nsis").glob("*.exe"))
     assert len(nsis) == 1, "Expected one NSIS installer"
     shutil.copyfile(nsis[0], out / "SkyForge-Helper-Setup-x64.exe")
+    # MSI is optional: WiX cannot encode the non-numeric `rc.N` pre-release
+    # version, so the NSIS setup is the validated package for this line.
     msi = list((target / "msi").glob("*.msi"))
-    assert len(msi) == 1, "Expected one MSI installer"
-    shutil.copyfile(msi[0], out / "SkyForge-Helper-x64.msi")
-    print("Windows NSIS/MSI collected; Authenticode and install E2E run in the workflow")
+    if msi:
+        shutil.copyfile(msi[0], out / "SkyForge-Helper-x64.msi")
+        print("Windows NSIS/MSI collected; Authenticode and install E2E run in the workflow")
+    else:
+        print("Windows NSIS collected; MSI not produced for this pre-release version")
 else:
     raise SystemExit(f"Unsupported packaging host: {platform.system()}")
 

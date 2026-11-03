@@ -21,7 +21,9 @@ jobs:
             platform: macos-arm64
           - os: windows-2022
             target: x86_64-pc-windows-msvc
-            bundles: nsis,msi
+            # MSI/WiX rejects the non-numeric `rc.5` pre-release version, so NSIS
+            # is the validated Windows package for this pre-release line.
+            bundles: nsis
             platform: windows-x64
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
@@ -54,7 +56,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Get-ChildItem artifacts/*.exe, artifacts/*.msi | ForEach-Object {
+          Get-ChildItem artifacts | Where-Object { $_.Extension -in '.exe', '.msi' } | ForEach-Object {
             $s = Get-AuthenticodeSignature $_.FullName
             Write-Output "$($_.Name): $($s.Status)"
           }
