@@ -98,7 +98,7 @@ Not tested on macOS:
 
 ### CI — PASS
 
-Latest main-branch runs:
+Validated main-branch runs (all success):
 
 - `41735310811` — this report and final product page.
 - `41730146185` — product page and installer packaging.

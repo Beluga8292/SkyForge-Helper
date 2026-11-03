@@ -93,7 +93,7 @@ Save goals, watch market items and use the built-in calculators for the numbers 
 
 ### Windows 10/11 (x64)
 
-1. Download `SkyForge-Helper-Setup-x64.exe` from [Releases](https://github.com/Beluga8292/SkyForge-Helper/releases).
+1. Download `SkyForge-Helper-Setup-x64.exe` from the [Releases page](https://github.com/Beluga8292/SkyForge-Helper/releases/tag/v0.5.0-rc.5-installers).
 2. Run the installer. It installs for the current user and does not require administrator rights.
 3. Open the app from the Start Menu.
 
@@ -101,7 +101,7 @@ WebView2 is installed automatically if it is missing, which requires an internet
 
 ### macOS 12+ (Apple silicon)
 
-1. Download `SkyForge-Helper-macOS-arm64.dmg` from [Releases](https://github.com/Beluga8292/SkyForge-Helper/releases).
+1. Download `SkyForge-Helper-macOS-arm64.dmg` from the [Releases page](https://github.com/Beluga8292/SkyForge-Helper/releases/tag/v0.5.0-rc.5-installers).
 2. Open the DMG.
 3. Drag **SkyForge Helper** into **Applications**.
 4. Launch it from Applications.
