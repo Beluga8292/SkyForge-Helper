@@ -98,8 +98,9 @@ Not tested on macOS:
 
 ### CI — PASS
 
-Latest main-branch runs before this report:
+Latest main-branch runs:
 
+- `41735310811` — this report and final product page.
 - `41730146185` — product page and installer packaging.
 - `41731320943` — NSIS validation on Windows, MSI optional.
 - `41732527916` — Windows uninstall settings preservation.
