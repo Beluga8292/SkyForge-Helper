@@ -319,3 +319,45 @@ async def test_missing_page_rows_never_replace_full_snapshot(settings, upstream,
         assert len(kept.value["auctions"]) == 4
     finally:
         await c.close()
+
+
+async def test_retry_releases_failed_generation_before_next_download(settings, upstream, monkeypatch):
+    import gc
+    import weakref
+
+    class Row(dict):
+        pass
+
+    refs = []
+    attempts = 0
+    c = await build_container(settings, upstream)
+
+    async def fetch(page, priority=None):
+        nonlocal attempts
+        if page == 0:
+            gc.collect()
+            if attempts:
+                assert all(ref() is None for ref in refs), "Failed generation retained during next download"
+            attempts += 1
+        row = Row(uuid=f"row-{page}")
+        if page == 1:
+            refs.append(weakref.ref(row))
+        return {
+            "page": page,
+            "totalPages": 3,
+            "totalAuctions": 3,
+            "lastUpdated": 100 if page != 2 else 200,
+            "auctions": [row],
+        }
+
+    async def no_sleep(_):
+        pass
+
+    monkeypatch.setattr(c.auctions, "_fetch_page", fetch)
+    monkeypatch.setattr(auctions_module.asyncio, "sleep", no_sleep)
+    try:
+        with pytest.raises(UpstreamInvalidResponseError):
+            await c.auctions._fetch_all()
+        assert attempts == 3
+    finally:
+        await c.close()

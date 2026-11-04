@@ -78,6 +78,8 @@ class AuctionSnapshotService:
             self._last_attempt = time.monotonic()
             last_error: Exception | None = None
             for attempt in range(3):
+                pages: dict[int, dict[str, Any]] = {}
+                auctions: dict[str, dict[str, Any]] = {}
                 try:
                     first = await self._fetch_page(0)
                     total_pages = int(first.get("totalPages") or 0)
@@ -85,7 +87,7 @@ class AuctionSnapshotService:
                         raise UpstreamInvalidResponseError(f"Unexpected Auction House page count: {total_pages}")
                     expected_last = first.get("lastUpdated")
                     expected_total = int(first.get("totalAuctions") or 0)
-                    pages: dict[int, dict[str, Any]] = {0: first}
+                    pages[0] = first
 
                     semaphore = asyncio.Semaphore(self.concurrency)
 
@@ -108,7 +110,6 @@ class AuctionSnapshotService:
                         if int(page.get("totalAuctions") or 0) != expected_total:
                             raise UpstreamInvalidResponseError("Auction snapshot changed totalAuctions during download")
 
-                    auctions: dict[str, dict[str, Any]] = {}
                     for page_number in range(total_pages):
                         page = pages[page_number]
                         if int(page.get("page", page_number)) != page_number:
@@ -124,6 +125,7 @@ class AuctionSnapshotService:
                         )
 
                     items = list(auctions.values())
+                    pages.clear()
                     identity_indexed = await asyncio.to_thread(self.index_search, items)
                     fingerprint = ",".join(sorted(auctions)[:100])
                     digest = hashlib.sha256(f"{expected_last}:{expected_total}:{fingerprint}".encode()).hexdigest()[:16]
@@ -148,6 +150,10 @@ class AuctionSnapshotService:
                         "auctions": items,
                     }
                 except Exception as exc:
+                    # Failed generations must not overlap the next full download.
+                    # TaskGroup tracebacks and load() defaults can retain these maps.
+                    pages.clear()
+                    auctions.clear()
                     last_error = exc
                     self._last_error = type(exc).__name__
                     if attempt < 2:
