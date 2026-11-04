@@ -2,6 +2,8 @@
   "repository": "Beluga8292/SkyForge-Helper",
   "stableEndpoint": "https://github.com/Beluga8292/SkyForge-Helper/releases/latest/download/latest.json",
   "rcEndpoint": "https://github.com/Beluga8292/SkyForge-Helper/releases/download/rc-channel/latest.json",
-  "publishedInstallerVersion": "0.5.0-rc.5",
-  "publishedInstallerTag": "v0.5.0-rc.5-installers"
+  "publishedInstallerVersion": "0.5.0-rc.6",
+  "publishedInstallerTag": "v0.5.0-rc.6",
+  "publishedWindowsAsset": "SkyForge-Helper_0.5.0-rc.6_windows-x86_64-setup.exe",
+  "publishedMacosAsset": "SkyForge-Helper-macOS-arm64.dmg"
 }
