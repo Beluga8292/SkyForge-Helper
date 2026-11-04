@@ -226,6 +226,10 @@ jobs:
           $p = Start-Process $exe -PassThru
           for ($i=0; $i -lt 60 -and -not (Test-Path $db); $i++) { Start-Sleep 2 }
           if (-not (Test-Path $db)) { throw 'SQLite missing' }
+          $ready = "import sqlite3,pathlib,sys; c=sqlite3.connect(pathlib.Path(sys.argv[1]).as_uri()+'?mode=ro',uri=True); names={r[0] for r in c.execute('SELECT name FROM sqlite_master')}; sys.exit(0 if {'settings','cache','watchlist','market_history'}<=names else 1)"
+          for ($i=0; $i -lt 30; $i++) { python -c $ready $db; if ($LASTEXITCODE -eq 0) { break }; Start-Sleep 1 }
+          if ($LASTEXITCODE -ne 0) { throw 'Bootstrap schema not ready' }
+          Start-Sleep 3
           Stop-Process -Id $p.Id -Force
           Start-Sleep 3
           python scripts/windows-smoke-sqlite.py seed-upgrade $db
