@@ -264,7 +264,24 @@ export interface HypixelAuction {
   [key: string]: unknown;
 }
 
+export interface AuctionSearchQuery {
+  search?: string;
+  auctionType?: "all" | "bin" | "auction";
+  rarity?: string;
+  category?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  endingWithin?: number;
+  sort?: "ending_soon" | "price_asc" | "price_desc" | "newest";
+}
+
 export interface AuctionsResponse extends HypixelEnvelope {
+  filteredTotal?: number;
+  snapshotComplete?: boolean | null;
+  snapshotPages?: number;
+  identityIndexed?: number;
+  categories?: string[];
+  searchVersion?: number;
   page?: number;
   totalPages?: number;
   totalAuctions?: number;

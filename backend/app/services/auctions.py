@@ -12,6 +12,7 @@ from app.clients.hypixel import HypixelClient
 from app.core.errors import UpstreamInvalidResponseError, UpstreamNotFoundError, UpstreamUnavailableError
 from app.core.rate_limit import PRIORITY_LOW, PRIORITY_MEDIUM
 from app.schemas.api import AuctionItem, AuctionResponse, AuctionsResponse, Meta
+from app.services.auction_search import normalize, query_tokens, search_key
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +48,19 @@ class AuctionSnapshotService:
         self._refresh_lock = asyncio.Lock()
         self._last_attempt = 0.0
         self._last_error: str | None = None
+        self._search_keys: dict[str, tuple[str, bool]] = {}
+
+    def index_search(self, items: list[dict[str, Any]]) -> int:
+        """Worker-only, incremental metadata index; API readers never decode blobs."""
+        current = {}
+        for item in items:
+            key = self._search_keys.get(item["uuid"])
+            if key is None:
+                key = search_key(item)
+            current[item["uuid"]] = key
+            item["_search_text"] = key[0]
+        self._search_keys = current
+        return sum(key[1] for key in current.values())
 
     async def _fetch_page(self, page: int, priority: int = PRIORITY_MEDIUM) -> dict[str, Any]:
         payload = await self.client.get("/skyblock/auctions", params={"page": page}, priority=priority)
@@ -110,6 +124,7 @@ class AuctionSnapshotService:
                         )
 
                     items = list(auctions.values())
+                    identity_indexed = await asyncio.to_thread(self.index_search, items)
                     fingerprint = ",".join(sorted(auctions)[:100])
                     digest = hashlib.sha256(f"{expected_last}:{expected_total}:{fingerprint}".encode()).hexdigest()[:16]
                     snapshot_id = f"{expected_last or 'unknown'}-{digest}"
@@ -119,7 +134,12 @@ class AuctionSnapshotService:
                         total_pages,
                         len(items),
                     )
+                    self._last_error = None
                     return {
+                        "complete": True,
+                        "expected_total": expected_total,
+                        "search_index_version": 1,
+                        "identity_indexed": identity_indexed,
                         "snapshot_id": snapshot_id,
                         "fetched_at": time.time(),
                         "last_updated": expected_last,
@@ -159,6 +179,12 @@ class AuctionSnapshotService:
         bin_only: bool = False,
         search: str | None = None,
         sort: str = "ending_soon",
+        auction_type: str = "all",
+        rarity: str | None = None,
+        category: str | None = None,
+        min_price: float | None = None,
+        max_price: float | None = None,
+        ending_within: int | None = None,
         force: bool = False,
     ) -> AuctionsResponse:
         if page < 0:
@@ -171,20 +197,38 @@ class AuctionSnapshotService:
         now_ms = int(time.time() * 1000)
         items = [item for item in items if item.get("end") and item["end"] > now_ms and not item.get("claimed", False)]
 
-        if bin_only:
-            items = [item for item in items if item.get("bin")]
-        if search:
-            needle = search.casefold()
-            items = [
-                item
-                for item in items
-                if needle in (item.get("item_name") or "").casefold() or needle in item["uuid"].casefold()
-            ]
+        def price(item):
+            # Auctions show current bid, never claim it is an instant-buy offer.
+            return max(item.get("highest_bid_amount") or 0, item.get("starting_bid") or 0)
 
+        if bin_only or auction_type == "bin":
+            items = [item for item in items if item.get("bin")]
+        elif auction_type == "auction":
+            items = [item for item in items if not item.get("bin")]
+        if rarity:
+            items = [item for item in items if (item.get("tier") or "").casefold() == rarity.casefold()]
+        if category:
+            items = [item for item in items if (item.get("category") or "").casefold() == category.casefold()]
+        if min_price is not None:
+            items = [item for item in items if price(item) >= min_price]
+        if max_price is not None:
+            items = [item for item in items if price(item) <= max_price]
+        if ending_within is not None:
+            items = [item for item in items if item["end"] <= now_ms + ending_within * 1000]
+        if search and (tokens := query_tokens(search)):
+
+            def matches(item):
+                text = item.get("_search_text") or normalize((item.get("item_name") or "") + " " + item["uuid"])
+                return all(token in text for token in tokens)
+
+            items = [item for item in items if matches(item)]
+
+        # UUID is the deterministic tie-breaker for stable paging within a generation.
+        items.sort(key=lambda item: item["uuid"])
         if sort == "price_asc":
-            items.sort(key=lambda item: item.get("highest_bid_amount") or item.get("starting_bid") or 0)
+            items.sort(key=price)
         elif sort == "price_desc":
-            items.sort(key=lambda item: item.get("highest_bid_amount") or item.get("starting_bid") or 0, reverse=True)
+            items.sort(key=price, reverse=True)
         elif sort == "newest":
             items.sort(key=lambda item: item.get("start") or 0, reverse=True)
         else:
@@ -192,7 +236,10 @@ class AuctionSnapshotService:
 
         total = len(items)
         start = page * page_size
-        window = [AuctionItem.model_validate(item) for item in items[start : start + page_size]]
+        window = [
+            AuctionItem.model_validate({k: v for k, v in item.items() if not k.startswith("_")})
+            for item in items[start : start + page_size]
+        ]
         total_pages = max(1, (total + page_size - 1) // page_size)
         fetched = datetime.fromtimestamp(result.fetched_at, tz=UTC)
         return AuctionsResponse(
@@ -201,6 +248,12 @@ class AuctionSnapshotService:
             total_pages=total_pages,
             total_auctions=int(result.value.get("total_auctions") or total),
             filtered_total=total,
+            search_version=1,
+            snapshot_complete=result.value.get("complete"),
+            snapshot_pages=result.value.get("total_pages", 0),
+            expected_auctions=result.value.get("expected_total"),
+            identity_indexed=result.value.get("identity_indexed", 0),
+            categories=sorted({item["category"] for item in raw_items if item.get("category")}),
             sort=sort,
             lastUpdated=result.value.get("last_updated"),
             auctions=window,
@@ -223,7 +276,7 @@ class AuctionSnapshotService:
             if raw.get("uuid") == auction_id:
                 fetched = datetime.fromtimestamp(result.fetched_at, tz=UTC)
                 return AuctionResponse(
-                    auction=AuctionItem.model_validate(raw),
+                    auction=AuctionItem.model_validate({k: v for k, v in raw.items() if not k.startswith("_")}),
                     meta=Meta(
                         fetched_at=fetched,
                         fetched_at_ms=int(result.fetched_at * 1000),

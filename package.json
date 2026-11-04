@@ -1,9 +1,9 @@
 {
   "name": "skyblock-companion",
   "private": true,
-  "version": "0.5.0-rc.6",
+  "version": "0.5.0-rc.7",
   "type": "module",
-  "description": "SkyForge Helper — desktop companion for Hypixel SkyBlock",
+  "description": "SkyForge Helper \u2014 desktop companion for Hypixel SkyBlock",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

@@ -132,3 +132,126 @@ it("keeps a partial intelligence payload usable when one asset is broken", async
   // A dropped asset never becomes a zero-priced row.
   expect(result.assets.every((entry) => entry.item_id !== "broken")).toBe(true);
 });
+
+it("sends global auction filters and preserves totals, snapshot status and server order", async () => {
+  const rows = [
+    { uuid: "cheap", item_name: "Hyperion", starting_bid: 1 },
+    { uuid: "later", item_name: "Hyperion", starting_bid: 5 },
+  ];
+  vi.mocked(transportFetch).mockResolvedValue(
+    new Response(
+      JSON.stringify({
+        success: true,
+        page: 2,
+        page_size: 50,
+        total_pages: 8,
+        total_auctions: 42000,
+        filtered_total: 377,
+        search_version: 1,
+        snapshot_complete: true,
+        snapshot_pages: 43,
+        identity_indexed: 41990,
+        categories: ["weapon"],
+        lastUpdated: 1800000000000,
+        auctions: rows,
+        meta: { stale: true, snapshot_id: "generation-1" },
+      }),
+    ),
+  );
+  const result = await backendProvider.searchAuctions!(2, {
+    search: "Necron's Chestplate",
+    auctionType: "auction",
+    rarity: "LEGENDARY",
+    category: "armor",
+    minPrice: 1,
+    maxPrice: 50,
+    endingWithin: 3600,
+    sort: "price_asc",
+  });
+  const url = new URL(
+    String(vi.mocked(transportFetch).mock.calls[0]![0]),
+    "http://localhost",
+  );
+  expect(Object.fromEntries(url.searchParams)).toMatchObject({
+    page: "2",
+    page_size: "50",
+    search: "Necron's Chestplate",
+    auction_type: "auction",
+    category: "armor",
+    rarity: "LEGENDARY",
+    min_price: "1",
+    max_price: "50",
+    ending_within: "3600",
+    sort: "price_asc",
+  });
+  expect(result.data).toMatchObject({
+    filteredTotal: 377,
+    totalAuctions: 42000,
+    totalPages: 8,
+    snapshotComplete: true,
+    identityIndexed: 41990,
+    categories: ["weapon"],
+  });
+  expect(result.data.auctions?.map((x) => x.uuid)).toEqual(["cheap", "later"]);
+  expect(result.stale).toBe(true);
+});
+
+it("does not claim advanced filters were applied by an older backend", async () => {
+  vi.mocked(transportFetch).mockImplementation(
+    async () =>
+      new Response(
+        JSON.stringify({
+          success: true,
+          page: 0,
+          page_size: 50,
+          total_pages: 1,
+          total_auctions: 2000,
+          filtered_total: 2000,
+          auctions: [],
+        }),
+      ),
+  );
+  await expect(
+    backendProvider.searchAuctions!(0, { minPrice: 100 }),
+  ).rejects.toMatchObject({ detail: "auction_search_update_required" });
+  const basic = await backendProvider.searchAuctions!(0, {
+    search: "Juju",
+    auctionType: "bin",
+  });
+  expect(basic.data.filteredTotal).toBe(2000);
+  expect(basic.data.snapshotComplete).toBeUndefined();
+  const url = String(vi.mocked(transportFetch).mock.calls.at(-1)![0]);
+  expect(url).toContain("bin_only=true");
+});
+
+it("aborts an obsolete auction request and never converts an HTTP failure into empty results", async () => {
+  const controller = new AbortController();
+  vi.mocked(transportFetch).mockImplementation(
+    async (_url, init) =>
+      new Promise((_resolve, reject) =>
+        init?.signal?.addEventListener(
+          "abort",
+          () => reject(new DOMException("cancelled", "AbortError")),
+          { once: true },
+        ),
+      ),
+  );
+  const pending = backendProvider.searchAuctions!(
+    0,
+    { search: "slow" },
+    controller.signal,
+  );
+  controller.abort();
+  await expect(pending).rejects.toBeDefined();
+  vi.mocked(transportFetch).mockResolvedValue(
+    new Response(
+      JSON.stringify({
+        error: { code: "upstream_unavailable", message: "Unavailable" },
+      }),
+      { status: 503 },
+    ),
+  );
+  await expect(
+    backendProvider.searchAuctions!(0, { search: "Hyperion" }),
+  ).rejects.toMatchObject({ kind: "unavailable" });
+});

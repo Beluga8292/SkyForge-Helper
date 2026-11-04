@@ -1,3 +1,4 @@
+import type { AuctionSearchQuery } from "@/types/hypixel";
 import { DEVELOPER_TOOLS_ENABLED } from "@/version";
 import { analysisSchema, parseAnalysis } from "@/features/intelligence/models";
 import {
@@ -63,6 +64,13 @@ const backendAuctionsSchema = z
     page_size: z.number(),
     total_pages: z.number(),
     total_auctions: z.number(),
+    filtered_total: z.number().optional(),
+    lastUpdated: z.number().nullable().optional(),
+    search_version: z.number().optional(),
+    snapshot_complete: z.boolean().nullable().optional(),
+    snapshot_pages: z.number().optional(),
+    identity_indexed: z.number().optional(),
+    categories: z.array(z.string()).optional(),
     auctions: z.array(auctionSchema),
     meta: backendMetaSchema.optional(),
   })
@@ -136,7 +144,10 @@ export { normalizeBackendUrl } from "@/data/backend-url";
  * Production always uses the compiled-in trusted endpoint. A custom URL is
  * honoured only when the user explicitly enabled developer mode.
  */
-export function resolveBackendUrl(settings: AppSettings, developerTools = DEVELOPER_TOOLS_ENABLED): string {
+export function resolveBackendUrl(
+  settings: AppSettings,
+  developerTools = DEVELOPER_TOOLS_ENABLED,
+): string {
   if (developerTools && settings.developerMode) {
     const custom = normalizeBackendUrl(settings.backendUrl);
     if (custom) return custom;
@@ -271,7 +282,10 @@ async function backendRequest<T>({
           cause instanceof z.ZodError
             ? cause.issues
                 .slice(0, 4)
-                .map((issue) => `${issue.path.join(".") || "root"}: ${issue.message}`)
+                .map(
+                  (issue) =>
+                    `${issue.path.join(".") || "root"}: ${issue.message}`,
+                )
                 .join("; ")
             : cause instanceof Error
               ? cause.message
@@ -432,6 +446,63 @@ export const backendProvider: DataProvider = {
       auctions: payload.auctions,
     };
     return envelope(mapped, payload.meta);
+  },
+
+  async searchAuctions(page, query: AuctionSearchQuery, signal) {
+    const params = new URLSearchParams({
+      page: String(Math.max(0, Math.floor(page))),
+      page_size: "50",
+      sort: query.sort ?? "ending_soon",
+    });
+    if (query.search?.trim()) params.set("search", query.search.trim());
+    if (query.auctionType === "bin") params.set("bin_only", "true");
+    if (query.auctionType) params.set("auction_type", query.auctionType);
+    if (query.rarity) params.set("rarity", query.rarity);
+    if (query.category) params.set("category", query.category);
+    if (query.minPrice !== undefined)
+      params.set("min_price", String(query.minPrice));
+    if (query.maxPrice !== undefined)
+      params.set("max_price", String(query.maxPrice));
+    if (query.endingWithin !== undefined)
+      params.set("ending_within", String(query.endingWithin));
+    const payload = await backendRequest({
+      path: `/auctions?${params}`,
+      schema: backendAuctionsSchema,
+      signal,
+    });
+    if (
+      payload.filtered_total === undefined ||
+      (!payload.search_version &&
+        (query.auctionType === "auction" ||
+          query.rarity ||
+          query.category ||
+          query.minPrice !== undefined ||
+          query.maxPrice !== undefined ||
+          query.endingWithin !== undefined))
+    ) {
+      throw new ApiError(
+        "unavailable",
+        "Auction filters require a backend update",
+        { detail: "auction_search_update_required" },
+      );
+    }
+    return envelope(
+      {
+        success: payload.success,
+        page: payload.page,
+        totalPages: payload.total_pages,
+        totalAuctions: payload.total_auctions,
+        lastUpdated: payload.lastUpdated ?? undefined,
+        filteredTotal: payload.filtered_total,
+        snapshotComplete: payload.snapshot_complete,
+        snapshotPages: payload.snapshot_pages,
+        identityIndexed: payload.identity_indexed,
+        categories: payload.categories,
+        searchVersion: payload.search_version,
+        auctions: payload.auctions,
+      },
+      payload.meta,
+    );
   },
 
   async getAuction(id, signal) {

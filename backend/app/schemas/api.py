@@ -138,6 +138,12 @@ class AuctionsResponse(StrictModel):
     total_pages: int
     total_auctions: int
     filtered_total: int
+    search_version: int = 1
+    snapshot_complete: bool | None = None
+    snapshot_pages: int = 0
+    expected_auctions: int | None = None
+    identity_indexed: int = 0
+    categories: list[str] = Field(default_factory=list)
     sort: str
     lastUpdated: int | None
     auctions: list[AuctionItem]
