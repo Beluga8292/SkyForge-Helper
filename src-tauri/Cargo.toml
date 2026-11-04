@@ -1,6 +1,6 @@
 [package]
 name = "skyblock-companion"
-version = "0.5.0-rc.6"
+version = "0.5.0-rc.7"
 description = "SkyForge Helper desktop shell"
 authors = ["Beluga_8292"]
 license = "MIT"
