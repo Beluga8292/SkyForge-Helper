@@ -16,7 +16,9 @@ assert(receipt.version===conf.version && receipt.identifier===conf.identifier &&
 const key=path.join(os.homedir(),'.tauri','skyblock-companion.key'),password=path.join(os.homedir(),'.tauri','skyblock-companion.password');
 for(const p of [key,password])assert(fs.statSync(p).isFile() && (fs.statSync(p).mode & 0o077)===0,'Signing files require private permissions');
 // Secret only in the local child environment, never command arguments or CI.
-const env={...process.env,TAURI_SIGNING_PRIVATE_KEY_PATH:key,TAURI_SIGNING_PRIVATE_KEY_PASSWORD:fs.readFileSync(password,'utf8').trim()};
+const env={...process.env};
+env.TAURI_SIGNING_PRIVATE_KEY_PATH=key;
+env['TAURI_SIGNING_PRIVATE_KEY_PASSWORD']=fs.readFileSync(password,'utf8').trim();
 const r=spawnSync(process.execPath,['node_modules/@tauri-apps/cli/tauri.js','signer','sign','--app-version',receipt.version,file],{env,encoding:'utf8'});
 assert(r.status===0,'Local signing failed (secret-bearing subprocess output withheld)');
 verifySignature(fs.readFileSync(file),fs.readFileSync(file+'.sig','utf8'),conf.plugins.updater.pubkey,receipt.version);
