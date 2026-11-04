@@ -164,3 +164,96 @@ all preserved state and GitHub subsequent discovery. Keep old updater online.
 
 **PARTIAL: signed candidate and Windows installer compatibility ready; real
 updater migration, real-user account/data retention and public delivery blocked.**
+
+## Stage 9.4.2 closeout — 2026-11-04
+
+**PARTIAL — E2E BLOCKED. Not READY FOR RELEASE APPROVAL.**
+
+[PR #1](https://github.com/Beluga8292/SkyForge-Helper/pull/1) was **MERGED** by a
+normal merge after all frontend/backend/Rust and security checks passed; it was
+conflict-free. Merge SHA: `0825e71d7faa55983f85e8d7ed6316ca2084aea4`. Local main was
+fast-forwarded to it. No force push, admin override or branch-rule change. The
+successful PR route resolves delivery of the documentation; it does not establish
+the internal cause of the earlier Git push `commit_refs_rules` errors.
+
+### Safe data preparation and real E2E result
+
+The previous protected 1,380-file backup was rechecked against the originals:
+unchanged. No redundant backup or real-app update was needed. A private restore
+seed was prepared under ignored `.verification/stage942/isolated-user-seed/`,
+including Application Support, WebKit, caches and preferences. Its SQLite was
+restored from the consistent backup and passed integrity plus every table-content
+hash comparison. Original data and both installed rc.4/rc.2 apps remain untouched.
+Keychain was neither exported nor modified. This seed is **data preparation,
+not a complete OS-isolated environment**; it must be restored in a separate macOS
+user/VM with separate WebKit/Keychain before launching a test app. No launch was
+made under an unproven same-user HOME override.
+
+**macOS original rc.5→rc.6 updater E2E: NOT RUN / BLOCKED.** The verified public
+rc.5 binary reads the unchanged production VDS manifest and cannot discover rc.6
+there. The shipped frontend/native check command exposes no endpoint override;
+changing its timeout/headers/target/proxy does not change the configured URL.
+No modified binary, TLS interception or test-endpoint rebuild was substituted as
+original published-app E2E. No native dialog/download/install/restart/data-retention
+PASS is claimed.
+
+**Windows Tauri updater flow: NOT RUN / BLOCKED** by the same unchanged VDS
+manifest and unpublished delivery. The prior disposable-runner install-over and
+fixture persistence PASS remains valid; it was not repeated or upgraded into a
+native-updater claim. Real SQLite/account preservation after updater installation
+remains unverified on both platforms.
+
+### Release and channels
+
+The existing rc.6 draft remains private/prerelease, targets build SHA
+`f64ccaf83d568a53af4b534ab5428a4b38e5892e`, and still contains 8 assets. All remote
+asset digests match the previously signature-verified local files; bilingual
+release notes match `latest.json`. Previous artifact/signature/checksum results
+are reused because the bytes are unchanged; no rebuild, re-sign or asset overwrite
+was performed in 9.4.2. Source validation/merge commits are not substituted for
+the original binary build target.
+
+Anonymous checks returned **404** for the RC feed, stable latest manifest and
+versioned rc.6 manifest. Authenticated draft access does not make these public.
+The RC config uses the dedicated `rc-channel` prerelease pointer; stable uses
+GitHub latest. No endpoint correction was necessary. Local installed native
+updater source uses strict SemVer `remote > current` and this app does not override
+that comparator: equal/older versions are not updates. This is code verification,
+not a live no-loop or subsequent-update test; those remain blocked by delivery.
+
+VDS manifest was rechecked against its prior snapshot: still unchanged rc.5.
+No production API/worker, database, Redis, Caddy, API key, Auction pipeline, old
+updater or unrelated VDS service was modified. No new binary or channel release
+was published. Backend availability evidence remains the live 9.4.1 checks above;
+there was no post-update application session to validate in 9.4.2.
+
+To unblock: provision a verified separate OS user/VM and restore the private seed;
+obtain separate approval for publishing the already verified versioned candidate
+and RC pointer; verify anonymous JSON/content/bytes/signatures; obtain separate
+approval for the VDS bridge if testing the unchanged published rc.5. Then run the
+actual GUI/native rc.5→rc.6 chain in isolation, compare account, SQLite, settings,
+Goals, Watchlist, FurfSky, history and Dungeon plans, verify backend and subsequent
+GitHub discovery, and only then consider the real backed-up installation. Keep the
+old updater online. A test-endpoint compatibility build must be labelled separately.
+
+### Stage 8.4 handoff — no implementation started here
+
+Per the current task, overall **8.4 remains PARTIAL**. The later completion section
+of local `docs/STAGE-8.md` documents a narrower completed catalog/budget scope;
+do not repeat the older continuation list as though those pieces were absent.
+8.1 is DONE; 8.2/8.3 are DONE locally; 8.5/8.6 remain NOT STARTED.
+
+Resume at the **verified purchase-variant pricing and catalog-coverage gap**:
+`src/pages/DungeonPlannerPage.tsx` price resolver and
+`src/features/dungeons/replacements.ts` `replacementCandidates`, together with
+`verified-items.json`. Reuse existing market valuation to price only a confirmed
+variant; otherwise keep Unknown. Add only source/version-backed lower-floor
+alternatives, and verify unresolved F5/F6/Master Mode requirements before changing
+gates. Pets comparison, exact dungeonization effects/cost and native imported
+FurfSky remain separate unsupported/unverified surfaces.
+
+Preserve the completed shared-material/essence basket in `budget.ts`, actual
+owned-instance upgrades, v1/v2 scoped plan storage, and existing 8.1–8.3 modules.
+Start with focused replacement/planner/page tests and existing UUID/profile
+isolation cases; do not rebuild infrastructure or start 8.5. This is a continuation
+plan only; no feature file was changed by Stage 9.4.2.
