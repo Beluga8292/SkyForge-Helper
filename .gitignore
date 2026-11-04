@@ -135,3 +135,4 @@ src-tauri/tauri.ci.generated.json
 !docs/assets/**
 !docs/STAGE-9.4.md
 !docs/STAGE-9.4.1.md
+!docs/STAGE-9.4-FINAL.md

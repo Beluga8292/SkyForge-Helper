@@ -11,9 +11,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Beluga8292/SkyForge-Helper/releases/download/v0.5.0-rc.5-installers/SkyForge-Helper-Setup-x64.exe"><img src="https://img.shields.io/badge/Скачать-Windows%20x64-8b5cf6?style=for-the-badge&logo=windows&logoColor=white" alt="Скачать SkyForge Helper для Windows"></a>
+  <a href="https://github.com/Beluga8292/SkyForge-Helper/releases/download/v0.5.0-rc.6/SkyForge-Helper_0.5.0-rc.6_windows-x86_64-setup.exe"><img src="https://img.shields.io/badge/Скачать-Windows%20x64-8b5cf6?style=for-the-badge&logo=windows&logoColor=white" alt="Скачать SkyForge Helper для Windows"></a>
   &nbsp;
-  <a href="https://github.com/Beluga8292/SkyForge-Helper/releases/download/v0.5.0-rc.5-installers/SkyForge-Helper-macOS-arm64.dmg"><img src="https://img.shields.io/badge/Скачать-macOS%20Apple%20silicon-22d3ee?style=for-the-badge&logo=apple&logoColor=white" alt="Скачать SkyForge Helper для macOS"></a>
+  <a href="https://github.com/Beluga8292/SkyForge-Helper/releases/download/v0.5.0-rc.6/SkyForge-Helper-macOS-arm64.dmg"><img src="https://img.shields.io/badge/Скачать-macOS%20Apple%20silicon-22d3ee?style=for-the-badge&logo=apple&logoColor=white" alt="Скачать SkyForge Helper для macOS"></a>
   &nbsp;
   <a href="https://discord.gg/bX3md4uepp"><img src="https://img.shields.io/badge/Discord-Сообщество-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord SkyForge Helper"></a>
 </p>
@@ -22,11 +22,11 @@
   <a href="https://github.com/Beluga8292/SkyForge-Helper/actions/workflows/ci.yml"><img src="https://github.com/Beluga8292/SkyForge-Helper/actions/workflows/ci.yml/badge.svg?branch=main" alt="Статус CI"></a>
   <a href="https://github.com/Beluga8292/SkyForge-Helper/actions/workflows/installers.yml"><img src="https://github.com/Beluga8292/SkyForge-Helper/actions/workflows/installers.yml/badge.svg?branch=main" alt="Статус сборки установщиков"></a>
   <img src="https://img.shields.io/badge/license-MIT-22d3ee?style=flat-square" alt="Лицензия MIT">
-  <img src="https://img.shields.io/badge/version-0.5.0--rc.5-f2b84b?style=flat-square" alt="Версия 0.5.0-rc.5">
+  <img src="https://img.shields.io/badge/version-0.5.0--rc.6-f2b84b?style=flat-square" alt="Версия 0.5.0-rc.6">
   <img src="https://img.shields.io/badge/platform-Windows%20x64%20%7C%20macOS%20ARM64-8b5cf6?style=flat-square" alt="Windows x64 и macOS ARM64">
 </p>
 
-> **Загрузка:** кнопки выше скачивают проверенный установщик Windows NSIS и DMG для Apple silicon. Контрольные суммы SHA-256 и описание релиза — на [странице Releases](https://github.com/Beluga8292/SkyForge-Helper/releases/tag/v0.5.0-rc.5-installers). Сборка и проверка установщиков выполняются в [installer workflow](https://github.com/Beluga8292/SkyForge-Helper/actions/workflows/installers.yml).
+> **Загрузка:** кнопки выше скачивают проверенный установщик Windows NSIS и DMG для Apple silicon. Контрольные суммы SHA-256 и описание релиза — на [странице Releases](https://github.com/Beluga8292/SkyForge-Helper/releases/tag/v0.5.0-rc.6). Сборка и проверка установщиков выполняются в [installer workflow](https://github.com/Beluga8292/SkyForge-Helper/actions/workflows/installers.yml).
 
 ---
 
@@ -93,7 +93,7 @@ BIN-лоты, фильтры, NBT-совместимое сопоставлен�
 
 ### Windows 10/11 (x64)
 
-1. Скачайте `SkyForge-Helper-Setup-x64.exe` со [страницы Releases](https://github.com/Beluga8292/SkyForge-Helper/releases/tag/v0.5.0-rc.5-installers).
+1. Скачайте `SkyForge-Helper_0.5.0-rc.6_windows-x86_64-setup.exe` со [страницы Releases](https://github.com/Beluga8292/SkyForge-Helper/releases/tag/v0.5.0-rc.6).
 2. Запустите установщик. Он ставится для текущего пользователя и не требует прав администратора.
 3. Откройте приложение из меню «Пуск».
 
@@ -101,7 +101,7 @@ BIN-лоты, фильтры, NBT-совместимое сопоставлен�
 
 ### macOS 12+ (Apple silicon)
 
-1. Скачайте `SkyForge-Helper-macOS-arm64.dmg` со [страницы Releases](https://github.com/Beluga8292/SkyForge-Helper/releases/tag/v0.5.0-rc.5-installers).
+1. Скачайте `SkyForge-Helper-macOS-arm64.dmg` со [страницы Releases](https://github.com/Beluga8292/SkyForge-Helper/releases/tag/v0.5.0-rc.6).
 2. Откройте DMG.
 3. Перетащите **SkyForge Helper** в **Applications**.
 4. Запустите приложение из Applications.

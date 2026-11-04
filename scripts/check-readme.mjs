@@ -4,7 +4,8 @@ import path from 'node:path';
 
 const root = path.resolve(import.meta.dirname, '..');
 const files = ['README.md', 'README.ru.md'];
-const releaseTag = 'v0.5.0-rc.5-installers';
+const policy = JSON.parse(fs.readFileSync(path.join(root, 'release/channels.json'), 'utf8'));
+const releaseTag = policy.publishedInstallerTag;
 const requiredSections = {
   'README.md': [
     'Built for SkyBlock players',
@@ -46,8 +47,8 @@ const discord = 'https://discord.gg/bX3md4uepp';
 const issues = 'https://github.com/Beluga8292/SkyForge-Helper/issues';
 const releasePage = `https://github.com/Beluga8292/SkyForge-Helper/releases/tag/${releaseTag}`;
 const expectedDownloads = {
-  windows: `https://github.com/Beluga8292/SkyForge-Helper/releases/download/${releaseTag}/SkyForge-Helper-Setup-x64.exe`,
-  macos: `https://github.com/Beluga8292/SkyForge-Helper/releases/download/${releaseTag}/SkyForge-Helper-macOS-arm64.dmg`,
+  windows: `https://github.com/Beluga8292/SkyForge-Helper/releases/download/${releaseTag}/${policy.publishedWindowsAsset}`,
+  macos: `https://github.com/Beluga8292/SkyForge-Helper/releases/download/${releaseTag}/${policy.publishedMacosAsset}`,
 };
 
 const texts = Object.fromEntries(files.map((file) => [file, fs.readFileSync(path.join(root, file), 'utf8')]));
@@ -71,7 +72,7 @@ for (const file of files) {
   }
   if (!text.includes(discord)) problems.push(`${file}: missing Discord link`);
   if (!text.includes(issues)) problems.push(`${file}: missing issues link`);
-  if (!text.includes('0.5.0-rc.5')) problems.push(`${file}: missing current version`);
+  if (!text.includes(policy.publishedInstallerVersion)) problems.push(`${file}: missing current version`);
   if (!text.includes(releasePage)) problems.push(`${file}: missing release page link`);
   if (!text.includes('actions/workflows/ci.yml/badge.svg?branch=main')) problems.push(`${file}: missing CI badge`);
   if (!text.includes('actions/workflows/installers.yml/badge.svg?branch=main')) problems.push(`${file}: missing installer badge`);

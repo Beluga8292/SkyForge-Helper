@@ -455,3 +455,5 @@ tsconfig.json
 tsconfig.node.json
 vite.config.ts
 vitest.config.ts
+scripts/windows-updater-e2e.mjs
+docs/STAGE-9.4-FINAL.md

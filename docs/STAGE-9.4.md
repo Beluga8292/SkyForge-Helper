@@ -161,3 +161,12 @@ private draft notes, independent production profile checks and publication/E2E
 blockers. This does not upgrade the earlier native updater E2E status to PASS.
 Documentation and validation changes use `validation/stage-9-4-1` and a PR;
 main protection/rules were not bypassed or changed.
+
+
+## Final authorized publication/migration
+
+The final task explicitly authorized rc.6 publication and the backed-up one-time
+VDS bridge. See [STAGE-9.4-FINAL.md](STAGE-9.4-FINAL.md) for current public assets,
+actual macOS installed rc.4→rc.6 updater evidence, GitHub subsequent checks,
+Windows results and exact remaining limits. Earlier draft/blocked checkpoints
+above are historical and do not describe the final delivery state.

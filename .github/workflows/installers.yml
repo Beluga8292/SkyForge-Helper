@@ -2,6 +2,11 @@ name: SkyForge Helper compatibility installers (artifacts only)
 on:
   workflow_dispatch:
     inputs:
+      validate_updater_windows:
+        description: Actual shipped rc.5 native updater GUI to public rc.6 (no rebuild)
+        required: false
+        default: false
+        type: boolean
       validate_existing_windows:
         description: Install rc.6 over published rc.5 on disposable Windows (no rebuild; NOT updater E2E)
         required: false
@@ -17,7 +22,7 @@ permissions:
   actions: read
 jobs:
   package:
-    if: inputs.validate_existing_windows != true
+    if: inputs.validate_existing_windows != true && inputs.validate_updater_windows != true
     strategy:
       fail-fast: false
       matrix:
@@ -187,3 +192,79 @@ jobs:
           python scripts/windows-smoke-sqlite.py verify-upgrade $db
           if ($LASTEXITCODE -ne 0) { throw 'Uninstall lost fixture data' }
           Write-Output 'RC.5 TO RC.6 INSTALL-OVER / RESTART / FIXTURE ACCOUNT-SETTINGS-WATCHLIST / SQLITE / UNINSTALL PASS; NOT UPDATER E2E'
+
+  windows-native-updater:
+    if: inputs.validate_updater_windows == true && github.repository == 'Beluga8292/SkyForge-Helper'
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Actual shipped Tauri updater and state retention
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          [Environment]::SetEnvironmentVariable('WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS', '--remote-debugging-port=9222', 'User')
+          $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = '--remote-debugging-port=9222'
+          $dir = Join-Path $env:LOCALAPPDATA 'SkyBlock Companion'
+          $exe = Join-Path $dir 'skyblock-companion.exe'
+          $db = Join-Path $env:APPDATA 'com.skyblock.companion\skyblock-companion.sqlite3'
+          if ((Test-Path $dir) -or (Test-Path $db)) { throw 'Disposable empty runner required' }
+          $manifest = Invoke-RestMethod 'https://updates.plasmavpn.online/sbc/updates/latest.json'
+          if ($manifest.version -ne '0.5.0-rc.6') { throw 'Expected approved rc.6 bridge' }
+          Invoke-WebRequest 'https://github.com/Beluga8292/SkyForge-Helper/releases/download/v0.5.0-rc.5-installers/SkyForge-Helper-Setup-x64.exe' -OutFile old-setup.exe
+          if ((Get-FileHash old-setup.exe -Algorithm SHA256).Hash.ToLower() -ne '07ec526a7b2ae37dd60a7a9eaafc579344c3831d8283977bc5e32f6c18fb892d') { throw 'Published rc.5 checksum mismatch' }
+          Start-Process (Resolve-Path old-setup.exe) -ArgumentList '/S' -Wait
+          if ((Get-Item $exe).VersionInfo.ProductVersion -notlike '0.5.0-rc.5*') { throw 'Expected rc.5' }
+          $p = Start-Process $exe -PassThru
+          for ($i=0; $i -lt 60 -and -not (Test-Path $db); $i++) { Start-Sleep 2 }
+          if (-not (Test-Path $db)) { throw 'SQLite missing' }
+          $ready = "import sqlite3,pathlib,sys; c=sqlite3.connect(pathlib.Path(sys.argv[1]).as_uri()+'?mode=ro',uri=True); names={r[0] for r in c.execute('SELECT name FROM sqlite_master')}; sys.exit(0 if {'settings','cache','watchlist','market_history'}<=names else 1)"
+          for ($i=0; $i -lt 30; $i++) { python -c $ready $db; if ($LASTEXITCODE -eq 0) { break }; Start-Sleep 1 }
+          if ($LASTEXITCODE -ne 0) { throw 'Bootstrap schema not ready' }
+          Start-Sleep 3
+          Stop-Process -Id $p.Id -Force
+          Start-Sleep 3
+          python scripts/windows-smoke-sqlite.py seed-upgrade $db
+          if ($LASTEXITCODE -ne 0) { throw 'Fixture setup failed' }
+          node scripts/windows-updater-e2e.mjs $exe
+          $nativeExit = $LASTEXITCODE
+          $version = (Get-Item $exe).VersionInfo.ProductVersion
+          $running = @(Get-CimInstance Win32_Process | Where-Object { $_.ExecutablePath -eq $exe })
+          Write-Output "POST-UPDATER VERSION: $version; APP PROCESS COUNT: $($running.Count)"
+          @{version=$version; appProcessCount=$running.Count; controllerExit=$nativeExit} | ConvertTo-Json | Set-Content artifacts/updater-e2e/post-install-diagnostic.json
+          if ($nativeExit -ne 0) {
+            try {
+              Add-Type -AssemblyName System.Windows.Forms
+              Add-Type -AssemblyName System.Drawing
+              $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+              $bitmap = New-Object System.Drawing.Bitmap $bounds.Width,$bounds.Height
+              $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+              $graphics.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
+              $bitmap.Save((Join-Path $pwd 'artifacts/updater-e2e/runner-failure.png'))
+              $graphics.Dispose(); $bitmap.Dispose()
+            } catch { Write-Output 'Runner desktop screenshot unavailable' }
+            throw 'Native updater controller failed; inspect post-install diagnostics'
+          }
+          if ((Get-Item $exe).VersionInfo.ProductVersion -notlike '0.5.0-rc.6*') { throw 'Expected installed rc.6' }
+          $apps = Get-CimInstance Win32_Process | Where-Object { $_.ExecutablePath -eq $exe }
+          if (-not $apps) { throw 'Native restart did not leave rc.6 running' }
+          $apps | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
+          Start-Sleep 3
+          python scripts/windows-smoke-sqlite.py verify-upgrade $db
+          if ($LASTEXITCODE -ne 0) { throw 'Native update lost fixture data' }
+          Write-Output 'WINDOWS NATIVE TAURI UPDATER RC.5 TO RC.6 / SQLITE / ACCOUNT-SETTINGS-WATCHLIST FIXTURE PASS'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: windows-native-updater-e2e-${{ github.sha }}
+          path: artifacts/updater-e2e/*
+          if-no-files-found: warn
+          retention-days: 14
