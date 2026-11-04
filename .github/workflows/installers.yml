@@ -211,6 +211,8 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
+          [Environment]::SetEnvironmentVariable('WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS', '--remote-debugging-port=9222', 'User')
+          $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = '--remote-debugging-port=9222'
           $dir = Join-Path $env:LOCALAPPDATA 'SkyBlock Companion'
           $exe = Join-Path $dir 'skyblock-companion.exe'
           $db = Join-Path $env:APPDATA 'com.skyblock.companion\skyblock-companion.sqlite3'
@@ -229,7 +231,24 @@ jobs:
           python scripts/windows-smoke-sqlite.py seed-upgrade $db
           if ($LASTEXITCODE -ne 0) { throw 'Fixture setup failed' }
           node scripts/windows-updater-e2e.mjs $exe
-          if ($LASTEXITCODE -ne 0) { throw 'Native updater flow failed' }
+          $nativeExit = $LASTEXITCODE
+          $version = (Get-Item $exe).VersionInfo.ProductVersion
+          $running = @(Get-CimInstance Win32_Process | Where-Object { $_.ExecutablePath -eq $exe })
+          Write-Output "POST-UPDATER VERSION: $version; APP PROCESS COUNT: $($running.Count)"
+          @{version=$version; appProcessCount=$running.Count; controllerExit=$nativeExit} | ConvertTo-Json | Set-Content artifacts/updater-e2e/post-install-diagnostic.json
+          if ($nativeExit -ne 0) {
+            try {
+              Add-Type -AssemblyName System.Windows.Forms
+              Add-Type -AssemblyName System.Drawing
+              $bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+              $bitmap = New-Object System.Drawing.Bitmap $bounds.Width,$bounds.Height
+              $graphics = [System.Drawing.Graphics]::FromImage($bitmap)
+              $graphics.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
+              $bitmap.Save((Join-Path $pwd 'artifacts/updater-e2e/runner-failure.png'))
+              $graphics.Dispose(); $bitmap.Dispose()
+            } catch { Write-Output 'Runner desktop screenshot unavailable' }
+            throw 'Native updater controller failed; inspect post-install diagnostics'
+          }
           if ((Get-Item $exe).VersionInfo.ProductVersion -notlike '0.5.0-rc.6*') { throw 'Expected installed rc.6' }
           $apps = Get-CimInstance Win32_Process | Where-Object { $_.ExecutablePath -eq $exe }
           if (-not $apps) { throw 'Native restart did not leave rc.6 running' }

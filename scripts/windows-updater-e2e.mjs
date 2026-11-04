@@ -25,6 +25,7 @@ async function click(labels){return evaluate(`(()=>{const b=[...document.querySe
 async function screenshot(name){const {data}=await call('Page.captureScreenshot',{format:'png'});fs.writeFileSync(`artifacts/updater-e2e/${name}.png`,Buffer.from(data,'base64'));}
 try{
  await poll(async()=>{await connect();return true;});
+ console.log('RC.5 WEBVIEW CONTROLLER CONNECTED');
  await poll(()=>evaluate(`!!document.querySelector('[role="dialog"]') && document.querySelector('[role="dialog"]').textContent.includes('0.5.0-rc.6')`));
  await screenshot('update-available');
  assert(await click(['Update','Обновить']),'Update button missing');
@@ -34,8 +35,10 @@ try{
  try{assert(await click(['Install and restart','Установить и перезапустить']));}catch(e){if(ws.readyState===WebSocket.OPEN)throw e;}
  // Do not start rc.6 ourselves: native updater must cause the restart.
  await poll(()=>child.exitCode!==null);
+ console.log('OLD APP EXITED; WAITING FOR NATIVE AUTOMATIC RESTART');
  try{ws.close();}catch{}
  await poll(async()=>{await connect();return (await evaluate(`window.__TAURI_INTERNALS__.invoke('plugin:app|version')`))==='0.5.0-rc.6';});
+ console.log('RC.6 AUTOMATIC RESTART AND NATIVE VERSION VERIFIED');
  assert(await evaluate(`(()=>{const a=[...document.querySelectorAll('a')].find(a=>a.getAttribute('href')==='#/settings');if(!a)return false;a.click();return true;})()`),'Settings route missing');
  await poll(()=>evaluate(`document.body.textContent.includes('0.5.0-rc.6')`));
  await poll(()=>click(['Check for updates','Проверить обновления']));
