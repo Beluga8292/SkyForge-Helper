@@ -58,7 +58,7 @@ URLs or platform entries. New files are collected privately, not old rc.5 assets
 
 ## Gates at implementation checkpoint
 
-Local frontend: **362 tests PASS**. Manifest/signature tools: **11 tests PASS**.
+Local frontend: **369 tests PASS**. Manifest/signature tools: **11 tests PASS**.
 TypeScript and Vite build PASS. Negative cases include corrupt/wrong signatures,
 wrong trusted version/comment, missing/invalid manifests, unsupported platforms,
 network errors and no-update state. Fixture crypto keys exist only in unit-test
@@ -88,3 +88,76 @@ missing report was read.
 
 **Checkpoint status: PARTIAL — preparation implemented, real artifact/E2E gates
 are reported at the completion checkpoint below.**
+
+
+## Final preparation results — 2026-11-04
+
+Build source: `f64ccaf83d568a53af4b534ab5428a4b38e5892e` on public main.
+Initial transient GitHub push HTTP 500 resolved; remote source SHA verified.
+
+- [Preparation workflow](https://github.com/Beluga8292/SkyForge-Helper/actions/runs/41810475029):
+  validation, Windows x64 and macOS ARM64 **PASS**.
+- [Normal CI](https://github.com/Beluga8292/SkyForge-Helper/actions/runs/41810461174):
+  frontend, backend and Rust **PASS**. Frontend: 369 tests; manifest: 11 tests.
+  Rust: 2 tests on each native runner. TypeScript and Vite PASS.
+- Windows rc.6 **BUILD / INSTALL / RELAUNCH / SQLITE PASS** on disposable runner.
+  This is installation and state retention across relaunch, not install-over or
+  updater E2E. Authenticode remains absent.
+- macOS rc.6 **BUILD PASS** locally and in CI; downloaded CI archive extracted
+  privately and `codesign --verify --deep --strict` PASS. Ad-hoc; not notarized.
+- Both CI payloads signed locally with the existing production updater key.
+  Full signatures, trusted exact version, source receipts and SHA-256 **PASS**.
+  Actual modified payload bytes rejected on both platforms. Keys stayed local.
+- Cross-platform manifest generated privately with real signature contents and
+  version-specific GitHub URLs; no unverified platforms included.
+- Private GitHub draft `v0.5.0-rc.6` created with target fixed to the build SHA.
+  Draft contains two payloads, signatures, receipts, latest.json and SHA256SUMS.
+  Authenticated re-download of all draft files: **DOWNLOAD / SHA256 / SIGNATURE
+  PASS** for both platforms. This is not anonymous public download validation.
+- Final source audit: 456 files, zero findings. Gitleaks: no leaks. Signing files,
+  downloaded assets, private manifests and verification logs remain ignored.
+
+| CI payload | SHA-256 |
+| --- | --- |
+| SkyForge-Helper_0.5.0-rc.6_darwin-aarch64.app.tar.gz | 4602334f3d7242259dfd1b047d79f2b8ccd5643026698b3a609f4a3b3a560c90 |
+| SkyForge-Helper_0.5.0-rc.6_windows-x86_64-setup.exe | 7cd25aebb332b98c246d5cf5df0e44bd28ffc29ad6bbc9a3710ed4e5911d1045 |
+
+## Remaining gates and handoff
+
+**Status: PARTIAL — signed cross-platform draft ready; migration not executed.**
+
+- Public GitHub manifest/asset delivery is NOT VERIFIED. Neither rc-channel nor
+  the binary draft has been published; anonymous URLs intentionally remain 404.
+- macOS install-over and signed native update E2E on either platform are NOT
+  VERIFIED. Windows clean install/relaunch does not establish updater E2E.
+- Actual rc.5 → rc.6 → subsequent GitHub update, interrupted native installation,
+  and real user data backup/restore comparison remain untested. No updater was
+  installed over the real user's app. SQLite, UUID, profiles, settings, Goals,
+  Watchlist, Dungeon builds and FurfSky were untouched; preservation after an
+  actual update is not claimed.
+- VDS manifest checked against the prior read: unchanged rc.5. No backend,
+  container, Caddy, database, API key or old updater service changed.
+- README keeps existing real rc.5 downloads. No stable release, RC feed promotion,
+  public binary release or VDS bridge publication occurred.
+
+Private local input: `.verification/stage94-cross-platform-input.json`.
+Private downloaded draft: `.verification/stage94-draft-download/`.
+Review draft using authenticated `gh release view v0.5.0-rc.6` (not a public URL).
+Build provenance stays at f64ccaf even if documentation adds a later main commit.
+
+Next: back up/isolate SQLite and full settings/WebKit/FurfSky state; perform native
+update E2E with verified artifacts. Public release/feed and VDS bridge need
+separate explicit owner approval. After publication, run
+`node scripts/probe-updater-manifest.mjs <published-feed-url>` for anonymous HTTP,
+JSON/content, downloaded signatures and hashes. Then verify backed-up rc.5 update,
+data retention and subsequent GitHub discovery. Do not retire VDS updater yet.
+
+
+## Stage 9.4.1 follow-up
+
+See [STAGE-9.4.1.md](STAGE-9.4.1.md) for the verified data backup, actual installed
+rc.4/rc.2 preflight, Windows rc.5→rc.6 **installer** compatibility PASS, RU/EN
+private draft notes, independent production profile checks and publication/E2E
+blockers. This does not upgrade the earlier native updater E2E status to PASS.
+Documentation and validation changes use `validation/stage-9-4-1` and a PR;
+main protection/rules were not bypassed or changed.
