@@ -9,3 +9,15 @@ it('network/HTML check errors stay errors with no stale info',async()=>{api.chec
 it('download verifies through native plugin and stops at user confirmation',async()=>{useUpdaterStore.setState({phase:'available'});api.downloadUpdate.mockImplementation(async cb=>cb({downloaded:10,total:10}));await useUpdaterStore.getState().download();expect(useUpdaterStore.getState()).toMatchObject({phase:'ready',downloaded:10,total:10});expect(api.installUpdate).not.toHaveBeenCalled();});
 it('bad signature/download never installs',async()=>{useUpdaterStore.setState({phase:'available'});api.downloadUpdate.mockRejectedValue(new Error('bad signature'));await useUpdaterStore.getState().download();expect(useUpdaterStore.getState()).toMatchObject({phase:'error',errorKey:'update.downloadError'});expect(api.installUpdate).not.toHaveBeenCalled();});
 it('install failure does not relaunch and exposes only translated error key',async()=>{useUpdaterStore.setState({phase:'ready'});api.installUpdate.mockRejectedValue(new Error('private native stack'));await useUpdaterStore.getState().install();expect(api.relaunchApp).not.toHaveBeenCalled();expect(useUpdaterStore.getState()).toMatchObject({phase:'error',errorKey:'update.installError'});});
+it('interrupted partial download cannot install and can retry discovery',async()=>{
+  useUpdaterStore.setState({phase:'available'});
+  api.downloadUpdate.mockImplementation(async cb=>{cb({downloaded:4,total:10});throw new DOMException('connection interrupted','AbortError');});
+  await useUpdaterStore.getState().download();
+  expect(useUpdaterStore.getState()).toMatchObject({phase:'error',downloaded:4,total:10,errorKey:'update.downloadError'});
+  await useUpdaterStore.getState().install();
+  expect(api.installUpdate).not.toHaveBeenCalled();
+  expect(api.relaunchApp).not.toHaveBeenCalled();
+  api.checkForUpdate.mockResolvedValue(null);
+  await useUpdaterStore.getState().check(true);
+  expect(useUpdaterStore.getState()).toMatchObject({phase:'current',info:null,errorKey:null});
+});

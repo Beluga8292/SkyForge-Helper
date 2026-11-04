@@ -2,6 +2,11 @@ name: SkyForge Helper compatibility installers (artifacts only)
 on:
   workflow_dispatch:
     inputs:
+      validate_existing_windows:
+        description: Install rc.6 over published rc.5 on disposable Windows (no rebuild; NOT updater E2E)
+        required: false
+        default: false
+        type: boolean
       backend_url:
         description: Public HTTPS backend URL (no credentials)
         required: true
@@ -9,8 +14,10 @@ on:
         type: string
 permissions:
   contents: read
+  actions: read
 jobs:
   package:
+    if: inputs.validate_existing_windows != true
     strategy:
       fail-fast: false
       matrix:
@@ -125,3 +132,58 @@ jobs:
           if-no-files-found: error
           retention-days: 14
           path: artifacts/*
+
+  windows-install-over:
+    if: inputs.validate_existing_windows == true && github.repository == 'Beluga8292/SkyForge-Helper'
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: updater-unsigned-x86_64-pc-windows-msvc-f64ccaf83d568a53af4b534ab5428a4b38e5892e
+          path: candidate
+          run-id: 41810475029
+          github-token: ${{ github.token }}
+      - name: Existing binary install-over compatibility (NOT updater E2E)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:GITHUB_ACTIONS -ne 'true') { throw 'Disposable runner only' }
+          $dir = Join-Path $env:LOCALAPPDATA 'SkyBlock Companion'
+          $db = Join-Path $env:APPDATA 'com.skyblock.companion\skyblock-companion.sqlite3'
+          if ((Test-Path $dir) -or (Test-Path $db)) { throw 'Refusing pre-existing installation or data' }
+          Invoke-WebRequest 'https://github.com/Beluga8292/SkyForge-Helper/releases/download/v0.5.0-rc.5-installers/SkyForge-Helper-Setup-x64.exe' -OutFile old-setup.exe
+          if ((Get-FileHash old-setup.exe -Algorithm SHA256).Hash.ToLower() -ne '07ec526a7b2ae37dd60a7a9eaafc579344c3831d8283977bc5e32f6c18fb892d') { throw 'Published rc.5 checksum mismatch' }
+          $setup = (Get-Item 'candidate/*-setup.exe').FullName
+          if ((Get-FileHash $setup -Algorithm SHA256).Hash.ToLower() -ne '7cd25aebb332b98c246d5cf5df0e44bd28ffc29ad6bbc9a3710ed4e5911d1045') { throw 'Verified rc.6 checksum mismatch' }
+          Start-Process (Resolve-Path old-setup.exe) -ArgumentList '/S' -Wait
+          $exe = Join-Path $dir 'skyblock-companion.exe'
+          function Start-CheckedApp($version) {
+            if ((Get-Item $exe).VersionInfo.ProductVersion -notlike "$version*") { throw 'Unexpected installed version' }
+            $p = Start-Process $exe -PassThru
+            for ($i=0; $i -lt 60 -and -not (Test-Path $db); $i++) { Start-Sleep 2; $p.Refresh(); if ($p.HasExited) { throw 'App exited' } }
+            if (-not (Test-Path $db)) { throw 'Database missing' }
+            Start-Sleep 5
+            $p.Refresh(); if ($p.HasExited) { throw 'App exited after startup' }
+            Stop-Process -Id $p.Id -Force
+            Start-Sleep 3
+          }
+          Start-CheckedApp '0.5.0-rc.5'
+          python scripts/windows-smoke-sqlite.py seed-upgrade $db
+          if ($LASTEXITCODE -ne 0) { throw 'Fixture setup failed' }
+          Start-Process $setup -ArgumentList '/S' -Wait
+          Start-CheckedApp '0.5.0-rc.6'
+          python scripts/windows-smoke-sqlite.py verify-upgrade $db
+          if ($LASTEXITCODE -ne 0) { throw 'Upgrade lost fixture data' }
+          Start-Process (Join-Path $dir 'uninstall.exe') -ArgumentList '/S' -Wait
+          for ($i=0; $i -lt 30 -and (Test-Path $exe); $i++) { Start-Sleep 2 }
+          if (Test-Path $exe) { throw 'Uninstall failed' }
+          python scripts/windows-smoke-sqlite.py verify-upgrade $db
+          if ($LASTEXITCODE -ne 0) { throw 'Uninstall lost fixture data' }
+          Write-Output 'RC.5 TO RC.6 INSTALL-OVER / RESTART / FIXTURE ACCOUNT-SETTINGS-WATCHLIST / SQLITE / UNINSTALL PASS; NOT UPDATER E2E'
