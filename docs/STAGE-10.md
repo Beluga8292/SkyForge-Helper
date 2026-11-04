@@ -175,3 +175,31 @@ PostgreSQL accepts connections and the worker stores history/aggregates, but
 ping/history-count deadline expires. The HTTP response remains 200; this
 status/history-count limitation is not claimed fixed by the Auction rollout.
 The existing VDS updater manifest and immutable rc.6 assets are unchanged.
+
+
+### Published rc.7
+
+Release: https://github.com/Beluga8292/SkyForge-Helper/releases/tag/v0.5.0-rc.7
+Desktop source: `156194b137f670a58c4f7b3646a1964b4afed631`.
+Release-preparation run **41919045484 PASS** on both macOS and Windows:
+380 frontend tests, TypeScript, Vite, branding/security gates, native builds and
+2 Rust tests per platform. Windows installer/relaunch/SQLite smoke PASS;
+Windows rc.6→rc.7 updater E2E was not run (do not reuse the older rc.5→rc.6 proof).
+
+Nine published assets were anonymously downloaded and matched GitHub SHA-256 and
+sizes. Both full updater signatures, trusted version comments and original
+verification key passed. macOS DMG matched every file of the CI-built app and
+passed codesign verification. RC channel now advertises rc.7; stable channel,
+rc.6 release and VDS bridge manifest remain unchanged.
+
+Real installed macOS rc.6 downloaded/verified rc.7, installed via the actual
+update dialog and automatically restarted as rc.7. Read-only SQLite integrity,
+all 12 static settings, account binding, watchlist/history and imported FurfSky
+IndexedDB logical records passed preservation checks; private backups stay
+outside Git. Empty watchlist/history remain empty, not claimed as populated
+migration fixtures.
+
+Payload SHA-256:
+- macOS updater: `42bb62b9f2983d2ca6315a98e0640f18c867177dac07333448c51f3ec53e5b75`
+- Windows updater/setup: `e2f81014ea2fb10fe30d71c888c5f784460f5f7c4dcc89416acfa80ef65af8c6`
+- macOS DMG: `e4887afaf323cd1ab457bf82310d1e31daae4c7cc8d5985f3542dc666f4befb2`
