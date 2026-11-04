@@ -137,3 +137,41 @@ Next: **10.2**, diagnose actual accessory/upgrade resolver identities, variants,
 BIN comparables versus Bazaar sides, unknown/stale sources and family/MP rules.
 Reuse the existing basket. Do not treat the broad search key as an exact-market
 variant match. 10.3–10.7 remain unstarted; do not declare Stage 10 DONE.
+
+## rc.7 rollout (authorized API + worker only)
+
+The owner subsequently authorized the app release and production deployment of
+only `skyblock-api` and `skyblock-worker`. Desktop artifact source is
+`156194b` (0.5.0-rc.7); backend retry-memory follow-up is `96cbedb` plus bounded,
+secret-free failure diagnostics. Failed generation maps are cleared before a
+retry; a weak-reference regression proves rows are released before the next
+full download (13 targeted Auction tests PASS).
+
+Deployment uses derived images from each existing service image, replacing only
+`app/services/auction_search.py`, `app/services/auctions.py`,
+`app/api/v1/routes/auctions.py`, and `app/schemas/api.py`. Environment equality was
+checked without displaying values. Original compose and `.env` remain unchanged.
+Active override: `/opt/skyblock-companion/.deploy/rc7-4526805/compose.v4.yaml`.
+Old images remain tagged `skyblock-companion-api:rollback-rc7-api` and
+`skyblock-companion-api:rollback-rc7-worker`. To roll back only these services:
+
+```sh
+cd /opt/skyblock-companion
+docker compose -p skyblock-companion -f compose.vds.yaml \
+  -f .deploy/rc7-4526805/rollback.yaml up -d --no-deps skyblock-api skyblock-worker
+```
+
+Two complete indexed generations were observed: 42,609 and 42,608 lots / 43 pages.
+Production AOTV search returned 147 BIN results, `snapshot_complete=true`,
+`identity_indexed=42609`, `search_version=1`, fresh data and no revalidation error.
+API/worker health passed; no OOM or automatic restart was observed. Only their
+container IDs changed; PostgreSQL, Redis, updater, VPN, bots and Caddy retained
+container IDs. No DB migrations, volume resets or upstream budget bypass.
+
+Live xHYPERI8Nx checks remain BLOCKED: both authenticated Hypixel endpoints
+returned 403 with `Invalid API key`; no key was changed or copied. Bazaar works.
+PostgreSQL accepts connections and the worker stores history/aggregates, but
+`/status` reports database unavailable when its existing 1-second combined
+ping/history-count deadline expires. The HTTP response remains 200; this
+status/history-count limitation is not claimed fixed by the Auction rollout.
+The existing VDS updater manifest and immutable rc.6 assets are unchanged.
