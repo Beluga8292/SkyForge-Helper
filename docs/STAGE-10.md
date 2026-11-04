@@ -137,3 +137,69 @@ Next: **10.2**, diagnose actual accessory/upgrade resolver identities, variants,
 BIN comparables versus Bazaar sides, unknown/stale sources and family/MP rules.
 Reuse the existing basket. Do not treat the broad search key as an exact-market
 variant match. 10.3–10.7 remain unstarted; do not declare Stage 10 DONE.
+
+## rc.7 rollout (authorized API + worker only)
+
+The owner subsequently authorized the app release and production deployment of
+only `skyblock-api` and `skyblock-worker`. Desktop artifact source is
+`156194b` (0.5.0-rc.7); backend retry-memory follow-up is `96cbedb` plus bounded,
+secret-free failure diagnostics. Failed generation maps are cleared before a
+retry; a weak-reference regression proves rows are released before the next
+full download (13 targeted Auction tests PASS).
+
+Deployment uses derived images from each existing service image, replacing only
+`app/services/auction_search.py`, `app/services/auctions.py`,
+`app/api/v1/routes/auctions.py`, and `app/schemas/api.py`. Environment equality was
+checked without displaying values. Original compose and `.env` remain unchanged.
+Active override: `/opt/skyblock-companion/.deploy/rc7-4526805/compose.v4.yaml`.
+Old images remain tagged `skyblock-companion-api:rollback-rc7-api` and
+`skyblock-companion-api:rollback-rc7-worker`. To roll back only these services:
+
+```sh
+cd /opt/skyblock-companion
+docker compose -p skyblock-companion -f compose.vds.yaml \
+  -f .deploy/rc7-4526805/rollback.yaml up -d --no-deps skyblock-api skyblock-worker
+```
+
+Two complete indexed generations were observed: 42,609 and 42,608 lots / 43 pages.
+Production AOTV search returned 147 BIN results, `snapshot_complete=true`,
+`identity_indexed=42609`, `search_version=1`, fresh data and no revalidation error.
+API/worker health passed; no OOM or automatic restart was observed. Only their
+container IDs changed; PostgreSQL, Redis, updater, VPN, bots and Caddy retained
+container IDs. No DB migrations, volume resets or upstream budget bypass.
+
+Live xHYPERI8Nx checks remain BLOCKED: both authenticated Hypixel endpoints
+returned 403 with `Invalid API key`; no key was changed or copied. Bazaar works.
+PostgreSQL accepts connections and the worker stores history/aggregates, but
+`/status` reports database unavailable when its existing 1-second combined
+ping/history-count deadline expires. The HTTP response remains 200; this
+status/history-count limitation is not claimed fixed by the Auction rollout.
+The existing VDS updater manifest and immutable rc.6 assets are unchanged.
+
+
+### Published rc.7
+
+Release: https://github.com/Beluga8292/SkyForge-Helper/releases/tag/v0.5.0-rc.7
+Desktop source: `156194b137f670a58c4f7b3646a1964b4afed631`.
+Release-preparation run **41919045484 PASS** on both macOS and Windows:
+380 frontend tests, TypeScript, Vite, branding/security gates, native builds and
+2 Rust tests per platform. Windows installer/relaunch/SQLite smoke PASS;
+Windows rc.6→rc.7 updater E2E was not run (do not reuse the older rc.5→rc.6 proof).
+
+Nine published assets were anonymously downloaded and matched GitHub SHA-256 and
+sizes. Both full updater signatures, trusted version comments and original
+verification key passed. macOS DMG matched every file of the CI-built app and
+passed codesign verification. RC channel now advertises rc.7; stable channel,
+rc.6 release and VDS bridge manifest remain unchanged.
+
+Real installed macOS rc.6 downloaded/verified rc.7, installed via the actual
+update dialog and automatically restarted as rc.7. Read-only SQLite integrity,
+all 12 static settings, account binding, watchlist/history and imported FurfSky
+IndexedDB logical records passed preservation checks; private backups stay
+outside Git. Empty watchlist/history remain empty, not claimed as populated
+migration fixtures.
+
+Payload SHA-256:
+- macOS updater: `42bb62b9f2983d2ca6315a98e0640f18c867177dac07333448c51f3ec53e5b75`
+- Windows updater/setup: `e2f81014ea2fb10fe30d71c888c5f784460f5f7c4dcc89416acfa80ef65af8c6`
+- macOS DMG: `e4887afaf323cd1ab457bf82310d1e31daae4c7cc8d5985f3542dc666f4befb2`

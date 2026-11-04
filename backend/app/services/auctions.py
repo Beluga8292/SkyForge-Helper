@@ -154,6 +154,14 @@ class AuctionSnapshotService:
                     # TaskGroup tracebacks and load() defaults can retain these maps.
                     pages.clear()
                     auctions.clear()
+                    logger.warning(
+                        "Auction snapshot attempt failed attempt=%s error=%s reason=%s",
+                        attempt + 1,
+                        type(exc).__name__,
+                        str(exc)
+                        if str(exc).startswith(("Auction snapshot changed", "Incomplete auction snapshot"))
+                        else "upstream",
+                    )
                     last_error = exc
                     self._last_error = type(exc).__name__
                     if attempt < 2:

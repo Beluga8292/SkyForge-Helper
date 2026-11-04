@@ -11,9 +11,9 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Beluga8292/SkyForge-Helper/releases/download/v0.5.0-rc.6/SkyForge-Helper_0.5.0-rc.6_windows-x86_64-setup.exe"><img src="https://img.shields.io/badge/Download-Windows%20x64-8b5cf6?style=for-the-badge&logo=windows&logoColor=white" alt="Download SkyForge Helper for Windows"></a>
+  <a href="https://github.com/Beluga8292/SkyForge-Helper/releases/download/v0.5.0-rc.7/SkyForge-Helper_0.5.0-rc.7_windows-x86_64-setup.exe"><img src="https://img.shields.io/badge/Download-Windows%20x64-8b5cf6?style=for-the-badge&logo=windows&logoColor=white" alt="Download SkyForge Helper for Windows"></a>
   &nbsp;
-  <a href="https://github.com/Beluga8292/SkyForge-Helper/releases/download/v0.5.0-rc.6/SkyForge-Helper-macOS-arm64.dmg"><img src="https://img.shields.io/badge/Download-macOS%20Apple%20silicon-22d3ee?style=for-the-badge&logo=apple&logoColor=white" alt="Download SkyForge Helper for macOS"></a>
+  <a href="https://github.com/Beluga8292/SkyForge-Helper/releases/download/v0.5.0-rc.7/SkyForge-Helper-macOS-arm64.dmg"><img src="https://img.shields.io/badge/Download-macOS%20Apple%20silicon-22d3ee?style=for-the-badge&logo=apple&logoColor=white" alt="Download SkyForge Helper for macOS"></a>
   &nbsp;
   <a href="https://discord.gg/bX3md4uepp"><img src="https://img.shields.io/badge/Discord-Join%20the%20community-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Join the SkyForge Helper Discord"></a>
 </p>
@@ -22,11 +22,11 @@
   <a href="https://github.com/Beluga8292/SkyForge-Helper/actions/workflows/ci.yml"><img src="https://github.com/Beluga8292/SkyForge-Helper/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI status"></a>
   <a href="https://github.com/Beluga8292/SkyForge-Helper/actions/workflows/installers.yml"><img src="https://github.com/Beluga8292/SkyForge-Helper/actions/workflows/installers.yml/badge.svg?branch=main" alt="Installer build status"></a>
   <img src="https://img.shields.io/badge/license-MIT-22d3ee?style=flat-square" alt="MIT License">
-  <img src="https://img.shields.io/badge/version-0.5.0--rc.6-f2b84b?style=flat-square" alt="Version 0.5.0-rc.6">
+  <img src="https://img.shields.io/badge/version-0.5.0--rc.7-f2b84b?style=flat-square" alt="Version 0.5.0-rc.7">
   <img src="https://img.shields.io/badge/platform-Windows%20x64%20%7C%20macOS%20ARM64-8b5cf6?style=flat-square" alt="Windows x64 and macOS ARM64">
 </p>
 
-> **Downloads:** the buttons above download the validated Windows NSIS setup and macOS Apple-silicon DMG. SHA-256 checksums and release notes are on the [Releases page](https://github.com/Beluga8292/SkyForge-Helper/releases/tag/v0.5.0-rc.6). Installer builds are produced and tested by the [installer workflow](https://github.com/Beluga8292/SkyForge-Helper/actions/workflows/installers.yml).
+> **Downloads:** the buttons above download the validated Windows NSIS setup and macOS Apple-silicon DMG. SHA-256 checksums and release notes are on the [Releases page](https://github.com/Beluga8292/SkyForge-Helper/releases/tag/v0.5.0-rc.7). Installer builds are produced and tested by the [installer workflow](https://github.com/Beluga8292/SkyForge-Helper/actions/workflows/installers.yml).
 
 ---
 
@@ -93,7 +93,7 @@ Save goals, watch market items and use the built-in calculators for the numbers 
 
 ### Windows 10/11 (x64)
 
-1. Download `SkyForge-Helper_0.5.0-rc.6_windows-x86_64-setup.exe` from the [Releases page](https://github.com/Beluga8292/SkyForge-Helper/releases/tag/v0.5.0-rc.6).
+1. Download `SkyForge-Helper_0.5.0-rc.7_windows-x86_64-setup.exe` from the [Releases page](https://github.com/Beluga8292/SkyForge-Helper/releases/tag/v0.5.0-rc.7).
 2. Run the installer. It installs for the current user and does not require administrator rights.
 3. Open the app from the Start Menu.
 
@@ -101,7 +101,7 @@ WebView2 is installed automatically if it is missing, which requires an internet
 
 ### macOS 12+ (Apple silicon)
 
-1. Download `SkyForge-Helper-macOS-arm64.dmg` from the [Releases page](https://github.com/Beluga8292/SkyForge-Helper/releases/tag/v0.5.0-rc.6).
+1. Download `SkyForge-Helper-macOS-arm64.dmg` from the [Releases page](https://github.com/Beluga8292/SkyForge-Helper/releases/tag/v0.5.0-rc.7).
 2. Open the DMG.
 3. Drag **SkyForge Helper** into **Applications**.
 4. Launch it from Applications.
