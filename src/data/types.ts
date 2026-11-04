@@ -1,3 +1,4 @@
+import type { AuctionSearchQuery } from "@/types/hypixel";
 import type { IntelligenceProvider } from "@/features/intelligence/models";
 import type { MarketProvider } from "@/features/market/models";
 import type { DataEnvelope, DataMode } from "@/types/app";
@@ -70,6 +71,11 @@ export interface DataProvider extends MarketProvider, IntelligenceProvider {
   getBazaar(signal?: AbortSignal): Promise<DataEnvelope<BazaarResponse>>;
   getAuctions(
     page: number,
+    signal?: AbortSignal,
+  ): Promise<DataEnvelope<AuctionsResponse>>;
+  searchAuctions?(
+    page: number,
+    query: AuctionSearchQuery,
     signal?: AbortSignal,
   ): Promise<DataEnvelope<AuctionsResponse>>;
   getAuction(

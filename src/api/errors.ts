@@ -60,6 +60,7 @@ export function toApiError(error: unknown, url: string | null = null): ApiError 
 /** i18n key used by the UI to render a helpful, localized error message. */
 export function errorMessageKey(error: unknown): string {
   const apiError = error instanceof ApiError ? error : toApiError(error);
+  if (apiError.detail === "auction_search_update_required") return "errors.auctionSearchUpdateRequired";
   if (apiError.detail === "upstream_forbidden") return "errors.profileUnavailable";
   if (apiError.detail === "upstream_budget_unavailable") return "errors.upstreamBudgetUnavailable";
   if (apiError.detail === "backend_unavailable") return "errors.backendUnavailable";

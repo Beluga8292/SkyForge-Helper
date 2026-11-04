@@ -174,7 +174,7 @@ textarea,
   background: var(--surface);
 }
 
-/* 1000 auction cards arrive per API page; skip off-screen layout/paint work. */
+/* Auction views render a bounded page; skip off-screen layout/paint work. */
 .auction-card {
   content-visibility: auto;
   contain-intrinsic-size: 190px;

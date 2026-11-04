@@ -21,14 +21,28 @@ async def list_auctions(
     bin_only: bool = Query(default=False),
     search: str | None = Query(default=None, max_length=64),
     sort: SortOrder = Query(default="ending_soon"),
+    auction_type: Literal["all", "bin", "auction"] = Query(default="all"),
+    rarity: str | None = Query(default=None, max_length=24),
+    category: str | None = Query(default=None, max_length=32),
+    min_price: float | None = Query(default=None, ge=0, le=1e15, allow_inf_nan=False),
+    max_price: float | None = Query(default=None, ge=0, le=1e15, allow_inf_nan=False),
+    ending_within: int | None = Query(default=None, ge=1, le=604800),
     container: Container = Depends(get_container),
 ) -> AuctionsResponse:
+    if min_price is not None and max_price is not None and min_price > max_price:
+        raise InvalidRequestError("Minimum price exceeds maximum price", status_code=422)
     return await container.auctions.list_auctions(
         page=page,
         page_size=page_size,
         bin_only=bin_only,
         search=search,
         sort=sort,
+        auction_type=auction_type,
+        rarity=rarity,
+        category=category,
+        min_price=min_price,
+        max_price=max_price,
+        ending_within=ending_within,
     )
 
 

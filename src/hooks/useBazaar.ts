@@ -1,3 +1,4 @@
+import type { AuctionSearchQuery } from "@/types/hypixel";
 import { useMemo, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { bazaarResponseSchema, auctionsResponseSchema } from "@/api/schemas";
@@ -121,16 +122,23 @@ export function useSkillsResource() {
   });
 }
 
-export function useAuctions(page: number) {
+export function useAuctions(
+  page: number,
+  filters: AuctionSearchQuery = {},
+  enabled = true,
+) {
   const provider = useDataProvider();
   const scope = useDataScope();
   const forceRef = useRef(false);
 
   const query = useQuery<DataEnvelope<AuctionsResponse>>({
-    queryKey: ["auctions", scope, page],
+    queryKey: ["auctions", scope, page, filters],
+    enabled,
     queryFn: async ({ signal }) => {
       const force = forceRef.current;
       forceRef.current = false;
+      if (provider.searchAuctions)
+        return provider.searchAuctions(page, filters, signal);
       if (provider.isDemo) return provider.getAuctions(page, signal);
       return cachedProviderFetch<AuctionsResponse>({
         schema: auctionsResponseSchema,
@@ -143,8 +151,10 @@ export function useAuctions(page: number) {
       });
     },
     staleTime: provider.id === "backend" ? BACKEND_AUCTIONS_TTL : 60_000,
-    gcTime: 10 * 60 * 1000,
-    retry: 1,
+    gcTime: provider.searchAuctions ? 60_000 : 10 * 60 * 1000,
+    refetchInterval: provider.searchAuctions ? BACKEND_AUCTIONS_TTL : false,
+    refetchIntervalInBackground: false,
+    retry: false,
   });
 
   const refresh = async () => {
@@ -157,11 +167,18 @@ export function useAuctions(page: number) {
   };
 
   const auctions = useMemo<HypixelAuction[]>(
-    () => [...(query.data?.data.auctions ?? [])].sort((a, b) => (a.end ?? 0) - (b.end ?? 0)),
+    () => query.data?.data.auctions ?? [],
     [query.data],
   );
 
-  return { ...query, envelope: query.data, auctions, refresh, demo: provider.isDemo };
+  return {
+    ...query,
+    envelope: query.data,
+    auctions,
+    refresh,
+    demo: provider.isDemo,
+    globalSearch: Boolean(provider.searchAuctions),
+  };
 }
 
 export type { ItemsResourceResponse };

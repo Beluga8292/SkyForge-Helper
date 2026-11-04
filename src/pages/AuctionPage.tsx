@@ -13,7 +13,6 @@ import {
   List,
   RefreshCw,
   Search,
-  Tag,
 } from "lucide-react";
 import { useI18n } from "@/locales";
 import { useAuctions } from "@/hooks/useBazaar";
@@ -60,19 +59,82 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/utils/cn";
 import type { HypixelAuction } from "@/types/hypixel";
 
-type SortMode = "ending" | "priceAsc" | "priceDesc";
+type SortMode = "ending" | "priceAsc" | "priceDesc" | "newest";
 type AuctionView = "table" | "grid";
 
 export function AuctionPage() {
   const { t, language } = useI18n();
   const [params, setParams] = useSearchParams();
-  const page = Math.max(0, Number(params.get("page") ?? 0) || 0);
-  const auctionsQuery = useAuctions(page);
+  const requestedPage = Number(params.get("page") ?? 0);
+  const page = Number.isFinite(requestedPage)
+    ? Math.min(10000, Math.max(0, Math.floor(requestedPage)))
+    : 0;
+  const [search, setSearch] = useState(params.get("q") ?? "");
+  const urlSearch = params.get("q") ?? "";
+  useEffect(() => setSearch(urlSearch), [urlSearch]);
+  const auctionType = params.get("type") ?? "all";
+  const category = params.get("category") ?? "all";
+  const rarity = params.get("rarity") ?? "all";
+  const sort = (params.get("sort") ?? "ending") as SortMode;
+  const updateFilter = (key: string, value: string) => {
+    setParams((previous) => {
+      const next = new URLSearchParams(previous);
+      if (value) next.set(key, value);
+      else next.delete(key);
+      next.set("page", "0");
+      return next;
+    });
+    setSelected(null);
+  };
+  const commitSearch = () => updateFilter("q", search.trim());
+  useEffect(() => {
+    if (search.trim() === (params.get("q") ?? "")) return;
+    const timer = window.setTimeout(
+      () => updateFilter("q", search.trim()),
+      300,
+    );
+    return () => window.clearTimeout(timer);
+  }, [search, params]);
+  const numericFilter = (key: string) => {
+    const raw = params.get(key);
+    const n = Number(raw);
+    return raw && Number.isFinite(n) && n >= 0 ? n : undefined;
+  };
+  const minPrice = numericFilter("min"),
+    maxPrice = numericFilter("max");
+  const invalidPrice =
+    ["min", "max"].some(
+      (key) =>
+        Boolean(params.get(key)) &&
+        (numericFilter(key) === undefined || (numericFilter(key) ?? 0) > 1e15),
+    ) ||
+    (minPrice !== undefined && maxPrice !== undefined && minPrice > maxPrice);
+  const auctionsQuery = useAuctions(
+    page,
+    {
+      search: params.get("q") ?? "",
+      auctionType:
+        auctionType === "bin" || auctionType === "auction"
+          ? auctionType
+          : "all",
+      category: category === "all" ? undefined : category,
+      rarity: rarity === "all" ? undefined : rarity,
+      minPrice,
+      maxPrice,
+      endingWithin: numericFilter("ends"),
+      sort:
+        (
+          {
+            ending: "ending_soon",
+            priceAsc: "price_asc",
+            priceDesc: "price_desc",
+            newest: "newest",
+          } as const
+        )[sort] ?? "ending_soon",
+    },
+    !invalidPrice,
+  );
   const now = useNow();
-  const [search, setSearch] = useState("");
-  const [binOnly, setBinOnly] = useState(false);
-  const [category, setCategory] = useState("all");
-  const [sort, setSort] = useState<SortMode>("ending");
   const [jump, setJump] = useState("");
   const [selected, setSelected] = useState<HypixelAuction | null>(null);
   const view: AuctionView = params.get("view") === "grid" ? "grid" : "table";
@@ -86,44 +148,58 @@ export function AuctionPage() {
 
   const totalPages = auctionsQuery.envelope?.data.totalPages ?? 1;
   const totalAuctions = auctionsQuery.envelope?.data.totalAuctions ?? 0;
-
-  const categories = useMemo(
-    () =>
-      [
-        ...new Set(
-          auctionsQuery.auctions
-            .map((auction) => auction.category)
-            .filter((value): value is string => Boolean(value)),
-        ),
-      ].sort(),
-    [auctionsQuery.auctions],
-  );
-
-  const auctions = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    const filtered = auctionsQuery.auctions.filter((auction) => {
-      if (binOnly && !auction.bin) return false;
-      if (category !== "all" && auction.category !== category) return false;
-      if (!query) return true;
-      return (
-        (auction.item_name ?? "").toLowerCase().includes(query) ||
-        auction.uuid.toLowerCase().includes(query)
+  useEffect(() => {
+    if (auctionsQuery.envelope && !auctionsQuery.error && page >= totalPages) {
+      setParams(
+        (previous) => {
+          const next = new URLSearchParams(previous);
+          next.set("page", String(Math.max(0, totalPages - 1)));
+          return next;
+        },
+        { replace: true },
       );
-    });
-    return [...filtered].sort((a, b) => {
-      if (sort === "priceAsc") return priceOf(a) - priceOf(b);
-      if (sort === "priceDesc") return priceOf(b) - priceOf(a);
-      return (a.end ?? 0) - (b.end ?? 0);
-    });
-  }, [auctionsQuery.auctions, search, binOnly, category, sort]);
+    }
+  }, [
+    page,
+    totalPages,
+    auctionsQuery.envelope,
+    auctionsQuery.error,
+    setParams,
+  ]);
 
+  const categories = auctionsQuery.envelope?.data.categories ?? [
+    "weapon",
+    "armor",
+    "accessories",
+    "consumables",
+    "blocks",
+    "misc",
+    "cosmetic",
+    "dyes",
+    "helmet_skins",
+    "other_skins",
+    "runes",
+  ];
+  // Backend returns an already filtered/sorted page. Direct/Demo are explicitly
+  // limited previews: never claim their page-local matches cover the snapshot.
+  const auctions = useMemo(() => {
+    if (auctionsQuery.globalSearch) return auctionsQuery.auctions;
+    return auctionsQuery.auctions.slice(0, 50);
+  }, [auctionsQuery.auctions, auctionsQuery.globalSearch]);
+  const searching = search.trim() !== (params.get("q") ?? "");
+  const filtersDisabled = !auctionsQuery.globalSearch;
+  const pageLabel = auctionsQuery.envelope
+    ? `${t("common.page")} ${page + 1} / ${Math.max(1, totalPages)}`
+    : auctionsQuery.error
+      ? "—"
+      : t("common.loading");
+  const pagingDisabled = !auctionsQuery.envelope || searching || invalidPrice;
   const goToPage = (next: number) => {
     const clamped = Math.max(0, Math.min(Math.max(0, totalPages - 1), next));
     const nextParams = new URLSearchParams(params);
     nextParams.set("page", String(clamped));
     setParams(nextParams);
     setSelected(null);
-    setSearch("");
   };
 
   useEffect(() => {
@@ -145,9 +221,7 @@ export function AuctionPage() {
             {auctionsQuery.demo ? (
               <Badge variant="amber">{t("common.demo")}</Badge>
             ) : null}
-            <Badge variant="outline">
-              {t("auction.page")} {page + 1} / {Math.max(1, totalPages)}
-            </Badge>
+            <Badge variant="outline">{pageLabel}</Badge>
             <Button
               size="sm"
               variant="secondary"
@@ -171,8 +245,35 @@ export function AuctionPage() {
           {t("auction.demoNote")}
         </div>
       ) : null}
-      {auctionsQuery.envelope?.stale ? (
-        <StaleNote updatedAt={auctionsQuery.envelope.updatedAt} />
+      {!auctionsQuery.globalSearch && (
+        <p role="status" className="mb-3 text-sm text-amber">
+          {t("auction.backendRequired")}
+        </p>
+      )}
+      {auctionsQuery.globalSearch &&
+        auctionsQuery.envelope &&
+        auctionsQuery.envelope.data.snapshotComplete !== true && (
+          <p role="status" className="mb-3 text-sm text-amber">
+            {t("auction.incomplete")}
+          </p>
+        )}
+      {auctionsQuery.globalSearch &&
+        auctionsQuery.envelope &&
+        (auctionsQuery.envelope.data.identityIndexed ?? 0) < totalAuctions && (
+          <p role="status" className="mb-3 text-sm text-amber">
+            {t("auction.identityPartial")}
+          </p>
+        )}
+      {auctionsQuery.envelope &&
+      (auctionsQuery.envelope.stale ||
+        now -
+          (auctionsQuery.envelope.data.lastUpdated ??
+            auctionsQuery.envelope.updatedAt) >
+          90_000) ? (
+        <div role="status">
+          <p className="mb-1 text-xs text-amber">{t("auction.stale")}</p>
+          <StaleNote updatedAt={auctionsQuery.envelope.updatedAt} />
+        </div>
       ) : null}
 
       <section className="panel mb-4 overflow-hidden">
@@ -181,13 +282,34 @@ export function AuctionPage() {
             <Search className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-fg-subtle" />
             <Input
               value={search}
+              maxLength={64}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder={t("auction.searchLoaded")}
-              className="pl-8"
+              placeholder={t("auction.searchGlobal")}
+              disabled={filtersDisabled}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") commitSearch();
+              }}
+              className="h-11 pl-9 text-sm"
             />
           </div>
+          {search && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSearch("");
+                updateFilter("q", "");
+              }}
+            >
+              {t("auction.clear")}
+            </Button>
+          )}
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:w-auto">
-            <Select value={category} onValueChange={setCategory}>
+            <Select
+              value={category}
+              onValueChange={(value) => updateFilter("category", value)}
+              disabled={filtersDisabled}
+            >
               <SelectTrigger className="min-w-[140px]">
                 <SelectValue placeholder={t("auction.category")} />
               </SelectTrigger>
@@ -202,7 +324,8 @@ export function AuctionPage() {
             </Select>
             <Select
               value={sort}
-              onValueChange={(value) => setSort(value as SortMode)}
+              onValueChange={(value) => updateFilter("sort", value)}
+              disabled={filtersDisabled}
             >
               <SelectTrigger className="min-w-[140px]">
                 <ArrowDownUp className="size-3.5 text-fg-subtle" />
@@ -215,17 +338,28 @@ export function AuctionPage() {
                 <SelectItem value="priceAsc">
                   {t("auction.sortPriceAsc")}
                 </SelectItem>
+                <SelectItem value="newest">
+                  {t("auction.sortNewest")}
+                </SelectItem>
                 <SelectItem value="priceDesc">
                   {t("auction.sortPriceDesc")}
                 </SelectItem>
               </SelectContent>
             </Select>
-            <Button
-              variant={binOnly ? "default" : "secondary"}
-              onClick={() => setBinOnly((current) => !current)}
+            <Select
+              value={auctionType}
+              onValueChange={(value) => updateFilter("type", value)}
+              disabled={filtersDisabled}
             >
-              <Tag className="size-3.5" /> {t("auction.binOnly")}
-            </Button>
+              <SelectTrigger aria-label={t("auction.type")}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("common.all")}</SelectItem>
+                <SelectItem value="bin">BIN</SelectItem>
+                <SelectItem value="auction">{t("auction.auction")}</SelectItem>
+              </SelectContent>
+            </Select>
             <div
               className="flex items-center gap-0.5 rounded-lg border border-line bg-surface-2/40 p-0.5"
               role="group"
@@ -253,10 +387,85 @@ export function AuctionPage() {
           </div>
         </div>
 
+        <details className="border-b border-line px-4 py-3">
+          <summary className="cursor-pointer text-sm">
+            {t("auction.advanced")}
+          </summary>
+          <div className="mt-3 flex flex-wrap gap-3">
+            <label className="text-xs">
+              {t("auction.tier")}
+              <select
+                aria-label={t("auction.tier")}
+                disabled={filtersDisabled}
+                value={rarity}
+                onChange={(e) => updateFilter("rarity", e.target.value)}
+                className="ml-2 rounded border border-line bg-bg px-2 py-1"
+              >
+                <option value="all">{t("common.all")}</option>
+                {[
+                  "COMMON",
+                  "UNCOMMON",
+                  "RARE",
+                  "EPIC",
+                  "LEGENDARY",
+                  "MYTHIC",
+                  "DIVINE",
+                  "SPECIAL",
+                  "VERY_SPECIAL",
+                ].map((r) => (
+                  <option key={r}>{r}</option>
+                ))}
+              </select>
+            </label>
+            <Input
+              aria-label={t("auction.minPrice")}
+              placeholder={t("auction.minPrice")}
+              type="number"
+              min="0"
+              disabled={filtersDisabled}
+              value={params.get("min") ?? ""}
+              onChange={(e) => updateFilter("min", e.target.value)}
+              className="w-40"
+            />
+            <Input
+              aria-label={t("auction.maxPrice")}
+              placeholder={t("auction.maxPrice")}
+              type="number"
+              min="0"
+              disabled={filtersDisabled}
+              value={params.get("max") ?? ""}
+              onChange={(e) => updateFilter("max", e.target.value)}
+              className="w-40"
+            />
+            <label className="text-xs">
+              {t("auction.sortEnding")}
+              <select
+                aria-label={t("auction.endingWithin")}
+                disabled={filtersDisabled}
+                value={params.get("ends") ?? ""}
+                onChange={(e) => updateFilter("ends", e.target.value)}
+                className="ml-2 rounded border border-line bg-bg px-2 py-1"
+              >
+                <option value="">{t("common.all")}</option>
+                <option value="300">5 min</option>
+                <option value="3600">1 h</option>
+                <option value="86400">24 h</option>
+              </select>
+            </label>
+          </div>
+        </details>
         <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2.5 text-[10.5px] text-fg-subtle">
           <span className="flex items-center gap-1.5">
             <Filter className="size-3" />{" "}
-            {t("auction.loaded", { count: auctions.length })}
+            {auctionsQuery.error
+              ? t("auction.loadError")
+              : auctionsQuery.envelope && !searching && !invalidPrice
+                ? auctionsQuery.globalSearch
+                  ? t("auction.results", {
+                      count: auctionsQuery.envelope.data.filteredTotal ?? 0,
+                    })
+                  : t("auction.loaded", { count: auctions.length })
+                : "—"}
             {totalAuctions ? (
               <span className="text-fg-subtle/70">
                 · {formatNumber(totalAuctions)}{" "}
@@ -272,7 +481,11 @@ export function AuctionPage() {
         </div>
       </section>
 
-      {auctionsQuery.isPending ? (
+      {invalidPrice ? (
+        <section role="alert" className="panel p-4 text-amber">
+          {t("auction.invalidPrice")}
+        </section>
+      ) : auctionsQuery.isPending || searching ? (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {Array.from({ length: 9 }).map((_, index) => (
             <div key={index} className="panel p-4">
@@ -307,8 +520,12 @@ export function AuctionPage() {
                 variant="secondary"
                 onClick={() => {
                   setSearch("");
-                  setBinOnly(false);
-                  setCategory("all");
+                  setParams((previous) => {
+                    const next = new URLSearchParams();
+                    if (previous.get("view"))
+                      next.set("view", previous.get("view")!);
+                    return next;
+                  });
                 }}
               >
                 {t("common.reset")}
@@ -328,15 +545,12 @@ export function AuctionPage() {
       )}
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-surface/40 px-4 py-3">
-        <span className="text-[10.5px] text-fg-subtle">
-          {t("common.page")} <b className="text-fg-muted">{page + 1}</b>{" "}
-          {t("common.of")} {Math.max(1, totalPages)}
-        </span>
+        <span className="text-[10.5px] text-fg-subtle">{pageLabel}</span>
         <div className="flex items-center gap-1.5">
           <Button
             variant="secondary"
             size="icon-sm"
-            disabled={page <= 0}
+            disabled={pagingDisabled || page <= 0}
             onClick={() => goToPage(0)}
             aria-label={t("auction.firstPage")}
           >
@@ -345,7 +559,7 @@ export function AuctionPage() {
           <Button
             variant="secondary"
             size="icon-sm"
-            disabled={page <= 0}
+            disabled={pagingDisabled || page <= 0}
             onClick={() => goToPage(page - 1)}
             aria-label={t("common.prev")}
           >
@@ -370,7 +584,7 @@ export function AuctionPage() {
             <Button
               variant="secondary"
               size="sm"
-              disabled={!jump}
+              disabled={pagingDisabled || !jump}
               onClick={() => {
                 goToPage(Number(jump) - 1);
                 setJump("");
@@ -382,7 +596,7 @@ export function AuctionPage() {
           <Button
             variant="secondary"
             size="icon-sm"
-            disabled={page >= totalPages - 1}
+            disabled={pagingDisabled || page >= totalPages - 1}
             onClick={() => goToPage(page + 1)}
             aria-label={t("common.next")}
           >
@@ -391,7 +605,7 @@ export function AuctionPage() {
           <Button
             variant="secondary"
             size="icon-sm"
-            disabled={page >= totalPages - 1}
+            disabled={pagingDisabled || page >= totalPages - 1}
             onClick={() => goToPage(totalPages - 1)}
             aria-label={t("auction.lastPage")}
           >
@@ -403,8 +617,19 @@ export function AuctionPage() {
       <div className="mt-4 flex items-start gap-2 rounded-xl border border-line bg-surface/40 px-4 py-3 text-[10.5px] leading-relaxed text-fg-subtle">
         <Info className="mt-0.5 size-3.5 shrink-0 text-amber" />
         <span>
-          <b className="text-fg-muted">{t("auction.limitationTitle")}.</b>{" "}
-          {t("auction.limitation")}
+          <b className="text-fg-muted">
+            {t(
+              auctionsQuery.globalSearch
+                ? "auction.snapshotScope"
+                : "auction.limitationTitle",
+            )}
+            .
+          </b>{" "}
+          {t(
+            auctionsQuery.globalSearch
+              ? "auction.globalNote"
+              : "auction.limitation",
+          )}
         </span>
       </div>
 
