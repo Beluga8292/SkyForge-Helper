@@ -1,0 +1,12 @@
+import { beforeEach,it,expect,vi } from 'vitest';
+const state=vi.hoisted(()=>({available:true,check:vi.fn()}));
+vi.mock('@/api/transport',()=>({isTauriRuntime:()=>state.available}));
+vi.mock('@/version',()=>({RELEASE_BUILD:true}));
+vi.mock('@tauri-apps/plugin-updater',()=>({check:state.check}));
+import { checkForUpdate,closePendingUpdate,downloadUpdate,installUpdate } from './updater';
+beforeEach(async()=>{await closePendingUpdate();state.available=true;state.check.mockReset();});
+it.each(['404 missing manifest','could not fetch a valid release json','HTTP 200 HTML','offline','unsupported platform'])('surfaces %s instead of claiming up to date',async message=>{state.check.mockRejectedValue(new Error(message));await expect(checkForUpdate()).rejects.toThrow(message);});
+it('no newer version is current only on a successful native check',async()=>{state.check.mockResolvedValue(null);expect(await checkForUpdate()).toBeNull();});
+it('unsupported runtime does not query',async()=>{state.available=false;expect(await checkForUpdate()).toBeNull();expect(state.check).not.toHaveBeenCalled();});
+it('failed recheck invalidates old pending resource',async()=>{const close=vi.fn();state.check.mockResolvedValueOnce({version:'1.0.0',currentVersion:'0.5.0',close});await checkForUpdate();state.check.mockRejectedValue(new Error('offline'));await expect(checkForUpdate()).rejects.toThrow();expect(close).toHaveBeenCalledOnce();await expect(installUpdate()).rejects.toThrow('no-update');});
+it('native verifier/download failure is never followed by install',async()=>{const install=vi.fn(),close=vi.fn();state.check.mockResolvedValue({version:'1.0.0',currentVersion:'0.5.0',close,install,download:vi.fn().mockRejectedValue(new Error('signature invalid'))});await checkForUpdate();await expect(downloadUpdate(()=>{})).rejects.toThrow('signature');expect(install).not.toHaveBeenCalled();});

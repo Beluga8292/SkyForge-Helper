@@ -1,0 +1,105 @@
+name: SkyForge Helper updater preparation (no signing secrets or publication)
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact candidate version in main (e.g. 0.5.0-rc.6)
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  validate:
+    if: github.repository == 'Beluga8292/SkyForge-Helper' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Check requested source version
+        env:
+          EXPECTED_VERSION: ${{ inputs.version }}
+        run: node -e "if(require('./package.json').version!==process.env.EXPECTED_VERSION)process.exit(1)"
+      - run: npm ci
+      - run: node scripts/verify-branding.mjs
+      - run: node --test scripts/updater-manifest.test.mjs
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run build
+      - run: python3 scripts/audit-publication.py
+      - run: python3 scripts/run-gitleaks.py
+  build:
+    needs: validate
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            target: aarch64-apple-darwin
+            bundles: app
+          - os: windows-2022
+            target: x86_64-pc-windows-msvc
+            bundles: nsis
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    env:
+      VITE_BACKEND_URL: https://updates.plasmavpn.online/sbc
+      VITE_RELEASE_CANDIDATE: 'true'
+      SFH_BUILD_TARGET: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec
+        with:
+          targets: ${{ matrix.target }}
+      - run: npm ci
+      - run: node scripts/prepare-ci-build.mjs
+      - run: node scripts/build-compat-native.mjs ${{ matrix.bundles }}
+      - run: cargo test --locked --manifest-path src-tauri/Cargo.toml --lib
+      - run: python scripts/collect-updater-assets.py
+      - name: Windows isolated install and settings smoke
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:GITHUB_ACTIONS -ne 'true') { throw 'Disposable runner only' }
+          $db = Join-Path $env:APPDATA 'com.skyblock.companion\skyblock-companion.sqlite3'
+          if (Test-Path $db) { throw 'Refusing to overwrite pre-existing data' }
+          $setup = (Get-ChildItem artifacts/updater/*-setup.exe).FullName
+          Start-Process $setup -ArgumentList '/S' -Wait
+          $exe = Join-Path $env:LOCALAPPDATA 'SkyBlock Companion\skyblock-companion.exe'
+          if (-not (Test-Path $exe)) { throw 'Per-user app executable missing' }
+          $p = Start-Process $exe -PassThru
+          for ($i=0; $i -lt 60 -and -not (Test-Path $db); $i++) { Start-Sleep 2; $p.Refresh(); if ($p.HasExited) { throw 'App exited' } }
+          if (-not (Test-Path $db)) { throw 'Database missing' }
+          python scripts/windows-smoke-sqlite.py set $db
+          if ($LASTEXITCODE -ne 0) { throw 'Fixture write failed' }
+          Stop-Process -Id $p.Id -Force
+          $p = Start-Process $exe -PassThru
+          Start-Sleep 5
+          python scripts/windows-smoke-sqlite.py get $db
+          if ($LASTEXITCODE -ne 0) { throw 'Settings not preserved on relaunch' }
+          Stop-Process -Id $p.Id -Force
+          Write-Output 'INSTALL/RELAUNCH/SQLITE PASS; signed update E2E not performed'
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: updater-unsigned-${{ matrix.target }}-${{ github.sha }}
+          path: artifacts/updater/*
+          if-no-files-found: error
+          retention-days: 14
+# Deliberately no contents:write, signing keys, release creation or VDS access.
+# Local signing/verification and optional private draft follow operator review.

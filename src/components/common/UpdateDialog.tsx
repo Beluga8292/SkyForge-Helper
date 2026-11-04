@@ -32,13 +32,15 @@ export function UpdateDialog() {
   const download = useUpdaterStore((state) => state.download);
   const install = useUpdaterStore((state) => state.install);
   const dismiss = useUpdaterStore((state) => state.dismiss);
+  const errorKey = useUpdaterStore((state) => state.errorKey);
+  const retry = useUpdaterStore((state) => state.check);
 
   const visible =
-    !dismissed && (phase === "available" || phase === "downloading" || phase === "ready" || phase === "installing");
+    !dismissed && (phase === "available" || phase === "downloading" || phase === "ready" || phase === "installing" || phase === "error");
   const percent = progressPercent(downloaded, total);
 
   return (
-    <Dialog open={visible} onOpenChange={(open) => !open && phase === "available" && dismiss()}>
+    <Dialog open={visible} onOpenChange={(open) => !open && ["available", "ready", "error"].includes(phase) && dismiss()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -51,6 +53,7 @@ export function UpdateDialog() {
         </DialogHeader>
 
         <DialogBody className="space-y-3">
+          {phase === "error" && <p role="alert" className="text-sm text-amber">{t(errorKey ?? "update.error")}</p>}
           {phase === "available" && info?.notes ? (
             <div className="rounded-lg border border-line bg-bg-elevated/60 px-3 py-2">
               <p className="mb-1 text-[10px] font-medium uppercase tracking-wide text-fg-subtle">
@@ -87,6 +90,7 @@ export function UpdateDialog() {
         </DialogBody>
 
         <DialogFooter>
+          {phase === "error" && <Button size="sm" onClick={() => void retry(true)}>{t("common.retry")}</Button>}
           {phase !== "installing" ? (
             <Button variant="ghost" size="sm" onClick={dismiss}>
               {t("update.later")}

@@ -1,0 +1,7 @@
+{
+  "repository": "Beluga8292/SkyForge-Helper",
+  "stableEndpoint": "https://github.com/Beluga8292/SkyForge-Helper/releases/latest/download/latest.json",
+  "rcEndpoint": "https://github.com/Beluga8292/SkyForge-Helper/releases/download/rc-channel/latest.json",
+  "publishedInstallerVersion": "0.5.0-rc.5",
+  "publishedInstallerTag": "v0.5.0-rc.5-installers"
+}

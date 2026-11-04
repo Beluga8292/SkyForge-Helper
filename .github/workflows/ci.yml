@@ -26,6 +26,7 @@ jobs:
       - run: python3 scripts/audit-publication.py
       - run: npm run typecheck
       - run: npm test
+      - run: node --test scripts/updater-manifest.test.mjs
       - run: npm run build
       - run: git diff --exit-code -- package-lock.json src-tauri/Cargo.lock backend/requirements-ci.lock
   backend:

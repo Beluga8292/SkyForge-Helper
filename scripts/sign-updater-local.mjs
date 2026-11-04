@@ -1,0 +1,23 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+import crypto from 'node:crypto';
+import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { verifySignature } from './updater-manifest.mjs';
+const [file, expectedCommit] = process.argv.slice(2);
+assert(file && /^[0-9a-f]{40}$/.test(expectedCommit ?? ''),'Artifact and approved full commit SHA required');
+const receipt=JSON.parse(fs.readFileSync(file+'.receipt.json','utf8'));
+assert(receipt.commit===expectedCommit,'Unapproved source commit');
+assert(receipt.file===path.basename(file) && receipt.sha256===crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'),'Artifact changed before signing');
+const git=spawnSync('git',['show',`${expectedCommit}:package.json`],{encoding:'utf8'});assert(git.status===0 && JSON.parse(git.stdout).version===receipt.version,'Source/version mismatch');
+const conf=JSON.parse(fs.readFileSync('src-tauri/tauri.conf.json','utf8'));
+assert(receipt.version===conf.version && receipt.identifier===conf.identifier && receipt.productName===conf.productName,'Identity mismatch');
+const key=path.join(os.homedir(),'.tauri','skyblock-companion.key'),password=path.join(os.homedir(),'.tauri','skyblock-companion.password');
+for(const p of [key,password])assert(fs.statSync(p).isFile() && (fs.statSync(p).mode & 0o077)===0,'Signing files require private permissions');
+// Secret only in the local child environment, never command arguments or CI.
+const env={...process.env,TAURI_SIGNING_PRIVATE_KEY_PATH:key,TAURI_SIGNING_PRIVATE_KEY_PASSWORD:fs.readFileSync(password,'utf8').trim()};
+const r=spawnSync(process.execPath,['node_modules/@tauri-apps/cli/tauri.js','signer','sign','--app-version',receipt.version,file],{env,encoding:'utf8'});
+assert(r.status===0,'Local signing failed (secret-bearing subprocess output withheld)');
+verifySignature(fs.readFileSync(file),fs.readFileSync(file+'.sig','utf8'),conf.plugins.updater.pubkey,receipt.version);
+console.log('Local updater signature and version verified; private key stayed local');

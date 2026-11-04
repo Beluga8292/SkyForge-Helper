@@ -1,7 +1,7 @@
 {
   "name": "skyblock-companion",
   "private": true,
-  "version": "0.5.0-rc.5",
+  "version": "0.5.0-rc.6",
   "type": "module",
   "description": "SkyForge Helper — desktop companion for Hypixel SkyBlock",
   "scripts": {

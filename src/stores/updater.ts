@@ -45,7 +45,7 @@ export const useUpdaterStore = create<UpdaterStore>((set, get) => ({
 
   check: async () => {
     const { phase } = get();
-    if (phase === "checking" || phase === "downloading" || phase === "installing") return;
+    if (["checking", "available", "downloading", "ready", "installing"].includes(phase)) return;
     if (!updaterAvailable()) {
       set({ phase: "unsupported" });
       return;
@@ -60,7 +60,7 @@ export const useUpdaterStore = create<UpdaterStore>((set, get) => ({
         lastCheckedAt: Date.now(),
       });
     } catch {
-      set({ phase: "error", errorKey: "update.error" });
+      set({ phase: "error", info: null, errorKey: "update.error" });
     }
   },
 

@@ -23,29 +23,17 @@ export function updaterAvailable(): boolean {
 
 export async function checkForUpdate(): Promise<UpdateDetails | null> {
   if (!updaterAvailable()) return null;
+  await closePendingUpdate();
   const { check } = await import("@tauri-apps/plugin-updater");
-  try {
-    const update = await check({ timeout: 20_000 });
-    if (!update) {
-      pending = null;
-      return null;
-    }
-    pending = update;
-    return {
-      version: update.version,
-      currentVersion: update.currentVersion,
-      date: update.date,
-      notes: update.body,
-    };
-  } catch (error) {
-    // No manifest has been published yet: treat as "up to date" instead of
-    // surfacing a raw transport error to the user.
-    if (/404|not found|could not fetch a valid release json/i.test(String(error))) {
-      pending = null;
-      return null;
-    }
-    throw error;
-  }
+  const update = await check({ timeout: 20_000 });
+  if (!update) return null;
+  pending = update;
+  return {
+    version: update.version,
+    currentVersion: update.currentVersion,
+    date: update.date,
+    notes: update.body,
+  };
 }
 
 export async function downloadUpdate(onProgress: (progress: DownloadProgress) => void): Promise<void> {

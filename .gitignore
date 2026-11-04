@@ -133,3 +133,4 @@ src-tauri/tauri.ci.generated.json
 !docs/images/skyforge-helper.png
 !docs/assets/
 !docs/assets/**
+!docs/STAGE-9.4.md
