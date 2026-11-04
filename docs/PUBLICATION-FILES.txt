@@ -113,6 +113,7 @@ docs/RELEASE-NOTES-UNRELEASED.md
 docs/SECURITY.md
 docs/STAGE-9.3.md
 docs/STAGE-9.4.md
+docs/STAGE-9.4.1.md
 docs/STAGE-9.md
 docs/THIRD-PARTY-INVENTORY.json
 docs/assets/brand-banner.png

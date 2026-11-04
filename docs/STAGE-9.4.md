@@ -151,3 +151,13 @@ separate explicit owner approval. After publication, run
 `node scripts/probe-updater-manifest.mjs <published-feed-url>` for anonymous HTTP,
 JSON/content, downloaded signatures and hashes. Then verify backed-up rc.5 update,
 data retention and subsequent GitHub discovery. Do not retire VDS updater yet.
+
+
+## Stage 9.4.1 follow-up
+
+See [STAGE-9.4.1.md](STAGE-9.4.1.md) for the verified data backup, actual installed
+rc.4/rc.2 preflight, Windows rc.5→rc.6 **installer** compatibility PASS, RU/EN
+private draft notes, independent production profile checks and publication/E2E
+blockers. This does not upgrade the earlier native updater E2E status to PASS.
+Documentation and validation changes use `validation/stage-9-4-1` and a PR;
+main protection/rules were not bypassed or changed.
